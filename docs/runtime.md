@@ -56,7 +56,7 @@ Use new output directories and retain the previous working files.
 `tools/assemble-runtime-components.py` can update components in an existing
 assembled root. It is also used by the complete root assembler.
 
-The remaining image builders, device-specific profile preparation, initial
+The [image builders](images.md) are available. Device-specific runtime profile preparation, initial
 privileged installation and pairing-data provisioning are not yet a complete
 published workflow. Do not substitute a previous experiment or guessed boot
 command for a missing step.

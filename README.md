@@ -36,7 +36,7 @@ are not promised.
 
 The switch app, boot-state policy, checked environment and image-file
 transactions, internal startup runtime, HDMI/CEC, remote voice and microphone adapters are published here.
-The remaining image builders, supporting apps and full build/deployment
+Image builders are included with a [build map](BUILD.md). Supporting apps and full deployment
 instructions are being imported. This checkout cannot yet install the complete TV system.
 
 - `app/`: bilingual switch UI, launcher artwork and boot-state logic.
@@ -45,6 +45,7 @@ instructions are being imported. This checkout cannot yet install the complete T
 - `tools/test-core.py`, `tests/`: offline tests with synthetic fixtures.
 - `hdmi/`, `hdmi-label/`, `voice/`: [hardware adapters and build commands](docs/hardware.md).
 - `runtime/`: [internal startup, rollback and component assembly](docs/runtime.md).
+- Image builders: [official-input extraction and local assembly](docs/images.md).
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17
