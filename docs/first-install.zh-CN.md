@@ -168,6 +168,40 @@ python3 tools/verify-first-install.py inspect \
 当前已测试合成验证流程和本机 shell 探测协议，
 通用探测命令尚未在新部署的电视安装上实际执行。
 
+## 准备首次启动参数
+
+`tools/plan-first-activation.py` 将部署日志、已完成的退出码 90 探测和私有启动记录关联，
+计算临时启动参数，并要求公开串口恢复代码能逐字恢复原参数。
+
+启动记录 JSON 包含 `stockBootargs`、`observedBootargs`、`kernelCmdline`、
+`deviceBindingSha256` 和 `deviceBindingScheme`。完整原值只保存在本地，
+核对机主自己的原厂配置并记录来源；文件哈希不能证明采集来源。
+完整内核命令行必须恰好包含每个被观察的参数一次，允许 mboot 调整顺序；
+新增参数不得覆盖 root 或 init 配置。
+
+```sh
+python3 tools/plan-first-activation.py \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --staging-record /private/staging-01/journal.json \
+  --staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256 \
+  --verification-record /private/staged-probe-01/journal.json \
+  --verification-record-sha256 VERIFIED_PROBE_JOURNAL_SHA256 \
+  --boot-observation /private/boot-observation.json \
+  --boot-observation-sha256 VERIFIED_OBSERVATION_SHA256 \
+  --recovery-profile /private/serial-recovery-profile.json \
+  --output /private/first-activation-plan-01
+```
+
+按实际新增参数计算长度，同时至少为 Bootloader 追加参数预留 626 字节，
+两种计算都必须在 2,047 字节上限内另留 64 字节余量；转义后的串口命令也必须能容纳。
+探测未完成、清单变化或原厂配置不匹配时拒绝生成。
+
+这一步不连接电视，也不授权写入。仍需核对当前串口状态、独立备份、实际验证过的串口撤销、
+文件系统健康状况和首次启动结果。本机当前日常系统的命令行已通过转换及长度核对，
+不能据此认为新的安装环境已通过上机验证。
+
 ## 后续设备步骤
 
 接收方必须在自己的电视上逐项完成：
@@ -194,5 +228,6 @@ python3 -B tests/test-first-install-root.py
 python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
+python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-runtime-policy-start.py
 ```

@@ -196,6 +196,46 @@ and actual first boot remain separate checks. Synthetic tests cover the
 verification sequence and local-shell probe protocol; the generalized probe
 has not been run on a newly staged TV installation.
 
+## Prepare the first boot entry
+
+`tools/plan-first-activation.py` joins the staging journal and completed refusal
+probe with a private boot observation. It calculates the temporary arguments and
+requires an exact inverse through the published serial recovery code.
+
+The observation JSON contains `stockBootargs`, `observedBootargs`,
+`kernelCmdline`, `deviceBindingSha256` and `deviceBindingScheme`. Retain the
+complete original values locally. Match them to the owner's stock profile and
+record their source; a file hash alone does not establish how they were obtained.
+The full kernel line must contain every observed argument exactly once. Order
+can differ because mboot moves some arguments. Additional arguments must not
+override the root or init configuration.
+
+```sh
+python3 tools/plan-first-activation.py \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --staging-record /private/staging-01/journal.json \
+  --staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256 \
+  --verification-record /private/staged-probe-01/journal.json \
+  --verification-record-sha256 VERIFIED_PROBE_JOURNAL_SHA256 \
+  --boot-observation /private/boot-observation.json \
+  --boot-observation-sha256 VERIFIED_OBSERVATION_SHA256 \
+  --recovery-profile /private/serial-recovery-profile.json \
+  --output /private/first-activation-plan-01
+```
+
+Both the measured command-line growth and a minimum 626-byte allowance for
+bootloader additions must leave 64 bytes below the 2,047-byte limit. Escaped
+console commands must also fit. Incomplete probes, changed inventories and
+unknown stock configurations are rejected.
+
+This is offline preparation: it sends no commands and does not authorize
+activation. Current console state, independently verified backups, demonstrated
+serial undo, filesystem health and the actual first boot still need verification.
+The reference TV's current daily command line passed the transform and length
+checks; that does not validate the new setup runtime.
+
 ## Remaining device sequence
 
 Each step must be established on the recipient's own TV:
@@ -230,5 +270,6 @@ python3 -B tests/test-first-install-root.py
 python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
+python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-runtime-policy-start.py
 ```
