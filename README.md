@@ -45,6 +45,7 @@ instructions are being imported. This checkout cannot yet install the complete T
 - `tools/test-core.py`, `tests/`: offline tests with synthetic fixtures.
 - `hdmi/`, `hdmi-label/`, `voice/`: [hardware adapters and build commands](docs/hardware.md).
 - `runtime/`: [internal startup, rollback and component assembly](docs/runtime.md).
+- [First installation](docs/first-install.md): temporary setup-root build and the remaining deployment sequence.
 - Image builders: [official-input extraction and local assembly](docs/images.md).
 - `adb-helper/`: [HyperOS debugging recovery](docs/adb-helper.md).
 - [Shared remote pairing](docs/remote-pairing.md): offline preparation and device sequence.

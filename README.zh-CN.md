@@ -43,6 +43,7 @@ ADB 和另一个槽位不能替代恢复通路。
 - `tools/test-core.py`、`tests/`：只使用合成数据的离线测试。
 - `hdmi/`、`hdmi-label/`、`voice/`：[硬件适配与构建命令](docs/hardware.zh-CN.md)。
 - `runtime/`：[内部启动、回退与组件组装](docs/runtime.zh-CN.md)。
+- [首次安装](docs/first-install.zh-CN.md)：临时安装环境构建及尚待补齐的设备部署步骤。
 - 镜像构建：[从官方输入提取并本地组装](docs/images.zh-CN.md)。
 - `adb-helper/`：[澎湃OS调试连接恢复](docs/adb-helper.zh-CN.md)。
 - [共用遥控器](docs/remote-pairing.zh-CN.md)：离线准备与上机顺序。

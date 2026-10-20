@@ -12,14 +12,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class StartupTests(unittest.TestCase):
     def run_case(self, *, boot_after=1, policy_exit=0, timeout_exit=0,
-                 uid=0, profile='shared-default-v1', release=14, fileboot=1):
+                 uid=0, profile='shared-default-v1', release=14, fileboot=1,
+                 source=None, marker_name='codex-daily-v1'):
         with tempfile.TemporaryDirectory() as name:
             base = Path(name)
             commands = base / 'commands'
             commands.mkdir()
             dev = base / 'dev'
             dev.mkdir()
-            (dev / 'codex-daily-v1').write_text(profile + '\n')
+            (dev / marker_name).write_text(profile + '\n')
             # A stale marker must not mask a failed policy execution.
             (dev / 'codex-runtime-policy-ready').write_text('stale\n')
             (dev / 'codex-runtime-policy.sh').write_text(
@@ -45,7 +46,8 @@ exec "$@"''',
                 path = commands / command
                 path.write_text('#!/bin/sh\nset -eu\n' + body + '\n')
                 path.chmod(0o700)
-            source = (ROOT / 'runtime/runtime-policy-start.sh').read_text()
+            if source is None:
+                source = (ROOT / 'runtime/runtime-policy-start.sh').read_text()
             source = source.replace('/system/bin/sh', '/bin/sh').replace('/dev/codex-', str(dev / 'codex-'))
             script = base / 'start.sh'
             script.write_text(source)

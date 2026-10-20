@@ -60,6 +60,8 @@ The [image builders](images.md) are available. Device-specific runtime profile p
 privileged installation and pairing-data provisioning are not yet a complete
 published workflow. Do not substitute a previous experiment or guessed boot
 command for a missing step.
+The [first-install build](first-install.md) derives a temporary setup root that
+does not require the shared state to exist already.
 
 The helper and final loader can be built with Clang and an ARM-capable LLVM
 linker:

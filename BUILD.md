@@ -17,6 +17,7 @@ Read [equipment](docs/equipment.md), [the incident](docs/incident.md) and
 | Build the HyperOS ADB helper | [ADB recovery](docs/adb-helper.md) | Owner-signed helper APK |
 | Prepare writable data or back up existing data | [Data and backups](docs/data.md) | New local data files or a checked private backup |
 | Build an updater for an existing installation | [Image updater](docs/image-updater.md) | A fixed four-file transaction DEX and plan |
+| Build a temporary first-install runtime | [First installation](docs/first-install.md) | A bounded setup root without the shared-state prerequisite |
 
 The order has dependencies: VNDK packaging precedes framework images; policy
 compilation precedes the vendor image; final image and component hashes go into
