@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "deviceBinding": "INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256",
+  "deviceBindingScheme": "freeguy-emmc-cid-serial-v1",
+  "images": {
+    "system.img": {"path": "/private/images/system.img", "bytes": 0, "sha256": "SHA256"},
+    "vendor.img": {"path": "/private/images/vendor.img", "bytes": 0, "sha256": "SHA256"},
+    "system_ext.img": {"path": "/private/images/system_ext.img", "bytes": 0, "sha256": "SHA256"},
+    "product.img": {"path": "/private/images/product.img", "bytes": 0, "sha256": "SHA256"},
+    "tvservice.img": {"path": "/private/images/tvservice.img", "bytes": 0, "sha256": "SHA256"},
+    "linux_rootfs_a.img": {"path": "/private/images/linux_rootfs_a.img", "bytes": 0, "sha256": "SHA256"},
+    "3rd_a.img": {"path": "/private/images/3rd_a.img", "bytes": 0, "sha256": "SHA256"},
+    "tvconfig_b.img": {"path": "/private/images/tvconfig_b.img", "bytes": 0, "sha256": "SHA256"},
+    "bootdata_b.img": {"path": "/private/images/bootdata_b.img", "bytes": 0, "sha256": "SHA256"},
+    "project_id.img": {"path": "/private/images/project_id.img", "bytes": 0, "sha256": "SHA256"},
+    "uenv.img": {"path": "/private/data/uenv.img", "bytes": 0, "sha256": "SHA256"},
+    "uuenv.img": {"path": "/private/data/uuenv.img", "bytes": 0, "sha256": "SHA256"},
+    "factory_a_b.img": {"path": "/private/images/factory_a_b.img", "bytes": 0, "sha256": "SHA256"},
+    "persist.img": {"path": "/private/data/persist.img", "bytes": 0, "sha256": "SHA256"},
+    "tvcertificate.img": {"path": "/private/data/tvcertificate.img", "bytes": 0, "sha256": "SHA256"},
+    "userdata.img": {"path": "/private/data/userdata.img", "bytes": 0, "sha256": "SHA256"},
+    "metadata.img": {"path": "/private/data/metadata.img", "bytes": 0, "sha256": "SHA256"},
+    "cache.img": {"path": "/private/data/cache.img", "bytes": 0, "sha256": "SHA256"}
+  },
+  "voice": {
+    "oem.apk": {"path": "/private/voice/oem.apk", "bytes": 0, "sha256": "SHA256"},
+    "libmibluetooth_jni.so": {"path": "/private/voice/libmibluetooth_jni.so", "bytes": 0, "sha256": "SHA256"}
+  },
+  "setupRoot": {"path": "/private/first-install-root-01/ramdisk.cpio.gz", "bytes": 0, "sha256": "SHA256"},
+  "setupLoader": {"path": "/private/first-install-loader-01/loader", "bytes": 0, "sha256": "SHA256"}
+}

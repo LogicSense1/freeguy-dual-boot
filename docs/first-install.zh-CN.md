@@ -67,6 +67,34 @@ Loader 沿用 `envdaily` 入口名称和精确撤销逻辑，
 Loader 在交接前写入并校验两份启动环境文件。
 这一步完成前失败，仍可能需要串口撤销。使用 RAM 文件系统不等于启动过程只读。
 
+## 本地文件清单
+
+把[输入模板](../examples/first-install-inputs.example.json)复制到仓库之外，
+填写路径、准确字节数和独立保留的 SHA-256。模板未填完时会拒绝执行。
+其中列出全部 18 个镜像、两个外部语音依赖、安装 ramdisk 和 loader。
+Loader 的 `manifest.json`、`audit.json` 应保留在它旁边。
+
+```sh
+python3 tools/plan-first-install.py \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/first-install-plan-01
+```
+
+仅当先前明确记录的绑定方式是 `freeguy-android-serial-v1` 时才使用该选项值，
+工具不会自动降级。工具对本地文件计算哈希，并核对安装环境中的源码脚本、挂载顺序、只读镜像清单和
+外部语音哈希，再检查 loader 清单及 64 项检查记录是否匹配该 ramdisk 和当前源码。
+输出的私有 `plan.json` 列出 21 个固定目标文件，全部禁止覆盖已有目标。
+压缩 ramdisk 只是本地构建输入，不单独上传。
+清单同时列出空 scratch 目录和待生成的 stage 标记。
+若阶段文件、loader、共享状态或代理目录已存在，首次部署必须停止。
+
+这一步不上传文件、不访问电视，不能证明数据来源属于本机，也不检查文件系统健康；
+这两项证据须另外保留。检查记录代表离线执行结果，不是签名或上机证明。
+清单不代表可以安装，后续部署工具仍须在写入前重新核对输入、当前电视、空间和全部目标。
+不要用首次空数据替换已有安装。
+
 ## 后续设备步骤
 
 接收方必须在自己的电视上逐项完成：
@@ -90,5 +118,6 @@ Loader 在交接前写入并校验两份启动环境文件。
 
 ```sh
 python3 -B tests/test-first-install-root.py
+python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-runtime-policy-start.py
 ```

@@ -78,6 +78,40 @@ The loader writes and verifies both startup-environment files before handoff.
 Earlier failure can still require serial undo. A RAM filesystem does not make
 this a read-only boot.
 
+## Local file inventory
+
+Copy the [input template](../examples/first-install-inputs.example.json) outside
+the repository. Fill in the paths, exact byte counts and independently retained
+SHA-256 values. The template intentionally fails validation until completed.
+It lists all 18 backing images, two external voice dependencies and the setup
+root and loader. Keep the loader's `manifest.json` and `audit.json` beside it.
+
+```sh
+python3 tools/plan-first-install.py \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/first-install-plan-01
+```
+
+Use `freeguy-android-serial-v1` instead only when that was the explicitly
+recorded binding scheme; the tool does not downgrade automatically.
+The tool hashes the local files and checks the setup root's source scripts,
+mount order, immutable-image list and external voice hashes. It then matches
+the loader manifest and 64-case audit to that root and current loader source.
+Its private `plan.json` has 21 fixed file destinations and marks every existing
+destination as non-overwritable. The compressed root is a local build input,
+not a separate upload. The plan also lists the empty scratch directory and
+generated stage marker. Existing stage, loader, shared-state or proxy directories
+must cause initial staging to stop.
+
+This performs no upload or device access. It neither establishes same-device
+provenance nor checks filesystem health; retain those records separately.
+An audit record describes an offline run, not a signature or a live test.
+The plan does not authorize installation. The future staging step must recheck
+local inputs, the current TV, free space and every destination before writing.
+Do not use fresh data files to replace an existing installation.
+
 ## Remaining device sequence
 
 Each step must be established on the recipient's own TV:
@@ -108,5 +142,6 @@ checked 1,005 embedded entries. **This combination has not been booted on a TV.*
 
 ```sh
 python3 -B tests/test-first-install-root.py
+python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-runtime-policy-start.py
 ```
