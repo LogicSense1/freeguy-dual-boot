@@ -174,7 +174,8 @@ class AccessTests(unittest.TestCase):
                      (access.PARENTS[1], 'mode', 0o120777),
                      (access.DIRECTORIES[0], 'gid', 1000),
                      (next(iter(self.files)), 'links', 2),
-                     (self.data[0], 'mode', 0o100640), (self.data[1], 'dev', 2)]
+                     (self.data[0], 'mode', 0o100640), (self.data[1], 'dev', 2),
+                     (self.data[2], 'bytes', 0)]
         for i, (path, key, value) in enumerate(mutations):
             device = FakeDevice(self.plan)
             device.nodes.setdefault(path, device.node(0o40700))[key] = value

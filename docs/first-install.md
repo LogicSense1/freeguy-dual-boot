@@ -302,7 +302,48 @@ Its preparation action has not been run on a first-install TV.
 Do not create the shared default directory yet. The temporary runtime refuses
 that directory on its next start. Shared state must be committed with the
 transition to the daily loader; creating it early can prevent resuming setup
-after an interruption. That transition transaction remains to be implemented.
+after an interruption.
+
+## Commit the daily files
+
+`tools/finalize-first-install.py` joins that transition. It requires the complete
+access journal from the same temporary boot, a daily loader with its ARM audit,
+and a matching switch-app profile. The daily root must differ from the setup root
+only in the four script entries changed by the first-install builder.
+
+The private `--daily-inputs` JSON contains `dailyRoot` and `dailyLoader`, each
+with `path`, `bytes` and `sha256`, using the same file-record format as staging.
+The loader directory must contain its matching `manifest.json` and `audit.json`.
+
+```sh
+python3 tools/finalize-first-install.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL \
+  --inputs /private/first-install-inputs.json \
+  --daily-inputs /private/daily-inputs.json \
+  --profile /private/local-switch-profile.json \
+  --access-record /private/switch-access/journal.json \
+  --known-device-binding YOUR_RECORDED_DEVICE_BINDING \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/new-finalize-inspection
+```
+
+This reads the physical environment twice and verifies both copies have already
+returned to stock boot arguments, with the original B boot image intact. It uses
+the same `dissect.extfs` dependency as `serial-recovery.py verify-persisted`.
+
+The `finalize` action with a new output directory stages and verifies the daily
+loader, tests its non-PID-1 refusal, retains the setup loader at
+`envdaily.first-install`, and replaces only the ordinary loader file. It then
+commits a new shared directory containing **HyperOS / IDLE / fault OK**.
+Files and parent directories are flushed before proceeding. It never selects
+Google, changes boot parameters, modifies data images, installs apps or reboots.
+
+An interruption stops the transaction and preserves its journal and files.
+Do not rerun against partial state. The verified stock boot configuration is
+left unchanged; the retained setup loader is not automatically selected.
+The transaction's tests cover interrupted mutations and failed journal writes.
+They do not simulate storage-controller failures or prove physical power-loss
+recovery. This new finalization command has not been applied to a TV.
 
 ## Remaining device sequence
 
@@ -322,10 +363,11 @@ Each step must be established on the recipient's own TV:
 6. Verify both switches, remembered defaults, retained data and serial recovery.
    Physical cold-power startup is a separate acceptance item.
 
-The staging and verification tools cover steps 1–2; their live first-install
-validation is outstanding. Complete checked commands for steps 3–5 are not yet
-provided. Do not fill these gaps with old AVB experiments, donor flashing,
-hand-edited environments or guessed service calls.
+The staging, verification, access and finalization tools cover individual parts
+of this sequence; their live first-install validation is outstanding.
+The coordinator, switch-app deployment and pairing integration still need to
+connect these parts. Do not fill these gaps with old AVB experiments, donor
+flashing, hand-edited environments or guessed service calls.
 
 ## Evidence
 
@@ -342,5 +384,6 @@ python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-first-switch-access.py
+JAVA_HOME=/path/to/jdk-17 python3 -B tests/test-finalize-first-install.py
 python3 -B tests/test-runtime-policy-start.py
 ```

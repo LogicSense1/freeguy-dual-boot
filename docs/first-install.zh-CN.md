@@ -260,7 +260,42 @@ python3 tools/prepare-first-switch-access.py inspect \
 
 此时不要创建共享默认目录。临时环境下次启动会拒绝这个目录；
 共享状态必须与切换到日常 loader 一起提交，提前创建可能导致配置中断后无法继续。
-这项转换事务仍待实现。
+
+## 提交日常启动文件
+
+`tools/finalize-first-install.py` 完成这项转换。它要求同一次临时启动中已经完成的
+权限日志、带 ARM 审核记录的日常 loader，以及匹配的切换应用配置。
+日常根文件系统只能与临时环境相差构建器调整的四个脚本条目。
+
+私有的 `--daily-inputs` JSON 包含 `dailyRoot` 和 `dailyLoader`，
+每项使用部署清单相同的 `path`、`bytes`、`sha256` 格式。
+Loader 所在目录必须有对应的 `manifest.json` 和 `audit.json`。
+
+```sh
+python3 tools/finalize-first-install.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL \
+  --inputs /private/first-install-inputs.json \
+  --daily-inputs /private/daily-inputs.json \
+  --profile /private/local-switch-profile.json \
+  --access-record /private/switch-access/journal.json \
+  --known-device-binding YOUR_RECORDED_DEVICE_BINDING \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/new-finalize-inspection
+```
+
+检查会读取两次物理环境分区，确认两份启动参数都已恢复为原厂配置，原厂 B 启动镜像未变。
+这与 `serial-recovery.py verify-persisted` 一样依赖 `dissect.extfs`。
+
+`finalize` 操作需使用新输出目录：上传并校验日常 loader，验证非 PID 1 拒绝执行，
+把临时 loader 保留为 `envdaily.first-install`，然后只替换普通 loader 文件。
+最后提交共享目录，初始状态固定为 **澎湃OS / IDLE / fault OK**；
+文件和父目录写入落盘后才继续下一步。
+不选择 Google、不改启动参数或数据镜像、不安装应用、不重启。
+
+中断时停止并保留日志和文件，不要对部分完成的状态直接重跑。
+已验证的原厂启动配置保持不变，也不会自动选择保留的临时 loader。
+事务测试覆盖写入中断和日志写入失败，但不模拟存储控制器故障，
+不能代替实际断电恢复验证。新提交命令尚未在电视上执行。
 
 ## 后续设备步骤
 
@@ -275,7 +310,8 @@ python3 tools/prepare-first-switch-access.py inspect \
    保留旧版本及匹配的应用配置。
 6. 验证双向切换、默认启动、数据保留和串口恢复。实际断电开机需单独验收。
 
-部署及验证工具覆盖第 1–2 步，尚待首次安装的实机验证；第 3–5 步的完整、带校验命令仍未提供。
+部署、校验、权限准备和日常文件提交工具已覆盖其中的独立步骤，尚待首次安装的实机验证。
+协调程序、切换应用部署和配对流程仍需把这些部分接起来。
 不要用旧 AVB 实验、海外固件直刷、手工修改环境文件或猜测的服务调用填补缺口。
 
 ## 证据
@@ -292,5 +328,6 @@ python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-first-switch-access.py
+JAVA_HOME=/path/to/jdk-17 python3 -B tests/test-finalize-first-install.py
 python3 -B tests/test-runtime-policy-start.py
 ```

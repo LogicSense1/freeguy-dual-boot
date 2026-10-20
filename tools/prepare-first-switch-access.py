@@ -204,8 +204,10 @@ def prepare(device, plan, output, apply=False):
                              0o100750 if path == LOADER + "/envdaily" else 0o100640, label=LABEL)
     for path in data:
         value = before[path]
+        row = next(row for row in plan["files"] if row["target"] == path)
         need(value["mode"] == 0o100600 and value["uid"] == value["gid"] == 2000
-             and value["links"] == 1, "Unexpected personal-data metadata")
+             and value["links"] == 1 and value["bytes"] == row["bytes"],
+             "Unexpected personal-data metadata")
     record = dict(mode="first-switch-access", complete=False, inspectOnly=not apply, binding=binding,
                   inventorySha256=hashlib.sha256(json.dumps(plan, sort_keys=True).encode()).hexdigest(),
                   before=before, targets=targets, pending=None, operations=[], uploadProcess=None,
