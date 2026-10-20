@@ -6,8 +6,8 @@
 本机当时是在较早的一轮临时 Google 启动中配置这些条件的，
 因此全新安装不能直接从日常环境开始。
 
-本页介绍去掉这项依赖的构建步骤及带校验的文件部署。
-首次启动激活和切换权限配置仍在整合，当前还不是完整安装流程。
+本页介绍构建、文件部署、切换权限准备和日常文件提交。
+首次启动激活和设备端配对仍在整合，当前还不是完整安装流程。
 
 ## 输入
 
@@ -17,6 +17,8 @@
   保留精确哈希及本地签名密钥。
 - 首次空数据应按[数据说明](data.zh-CN.md)，使用这台电视自己的输入构建。
   不得用新初始化文件覆盖已有安装的数据。
+- 在澎湃OS 中安装 stock 版切换应用并配置[开机服务](switch-app.zh-CN.md#首次配置开机服务)，
+  此时不要创建共享默认目录。保留 Google 版 APK，进入临时 Google 后再安装。
 - 两个文件形式的环境镜像若未通过文件系统检查，使用
   [本地副本准备工具](data.zh-CN.md#准备干净的环境副本)，保留原件，将校验后的新哈希填入输入清单。
 
@@ -305,13 +307,14 @@ python3 tools/finalize-first-install.py inspect \
 2. 修改启动状态前，核对上传哈希、剩余空间、权限及 loader 对非 PID 1 运行的拒绝。
 3. 从已检查的 B 控制台激活精确的一次性入口，观察启动，
    再独立确认两份环境文件已经恢复为澎湃OS参数。
-4. 在临时 Google 中配置切换服务权限，安装两侧切换应用，保留本机遥控器配对。
+4. 在临时 Google 中配置切换服务权限，安装 Google 侧切换应用，保留本机遥控器配对。
 5. 通过已审查的文件事务提交共享状态并换成单独构建的日常 loader，
    保留旧版本及匹配的应用配置。
 6. 验证双向切换、默认启动、数据保留和串口恢复。实际断电开机需单独验收。
 
 部署、校验、权限准备和日常文件提交工具已覆盖其中的独立步骤，尚待首次安装的实机验证。
-协调程序、切换应用部署和配对流程仍需把这些部分接起来。
+协调程序和配对流程仍需把这些部分接起来。
+两侧 APK 使用[应用指南](switch-app.zh-CN.md)中的普通安装命令，开机配置仍需后续实测。
 不要用旧 AVB 实验、海外固件直刷、手工修改环境文件或猜测的服务调用填补缺口。
 
 ## 证据
@@ -328,6 +331,7 @@ python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-first-switch-access.py
+python3 -B tests/test-provision-switch-startup.py
 JAVA_HOME=/path/to/jdk-17 python3 -B tests/test-finalize-first-install.py
 python3 -B tests/test-runtime-policy-start.py
 ```

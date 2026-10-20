@@ -1,5 +1,7 @@
 # Switch app
 
+[简体中文](switch-app.zh-CN.md)
+
 The app has two builds: `stock` keeps the HyperOS launcher artwork; `google`
 uses a circular fallback icon and an adaptive icon. Both use the same television
 banner and follow the system language: English by default, Chinese for `zh`.
@@ -71,10 +73,62 @@ to HyperOS writes that preference before rebooting.
 On this stock firmware, automatic dispatch also uses a system-bound
 accessibility service. It requests no UI events, window content, or gestures.
 Provisioning must preserve any existing accessibility services. That
-provisioning workflow is not yet part of this public checkout.
+first-install configuration is described below.
 
 These checks do not make a two-file update atomic under arbitrary power loss.
 The original B boot chain and a verified serial recovery route remain required.
+
+## First-install startup binding
+
+After building both APK variants, install the stock variant into HyperOS with
+the owner's explicit ADB selector:
+
+```sh
+adb -s TV_STOCK_ADB_SERIAL install /private/new-stock-app-build/switch.apk
+```
+
+This command intentionally omits replacement and downgrade flags. If the
+package already exists, inspect its signature, version and current installation
+before changing it. Do not uninstall it or clear its data as an install retry.
+The Google variant is installed with the same command and its own APK path
+after entering temporary Google; it uses that system's separate package data.
+The Android package manager must accept each signature. Retain the signing key.
+
+Before staging the Google system, configure the stock app:
+
+```sh
+python3 tools/provision-switch-startup.py inspect \
+  --adb /path/to/adb --device TV_STOCK_ADB_SERIAL \
+  --apk /private/new-stock-app-build/switch.apk \
+  --apk-sha256 VERIFIED_STOCK_APK_SHA256 \
+  --build-result /private/new-stock-app-build/build-result.json \
+  --build-result-sha256 VERIFIED_BUILD_RESULT_SHA256 \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/switch-startup-inspect-01
+```
+
+Use `enable` and a new journal directory after reviewing the inspection.
+It requires the matching installed APK, original B, ordinary stock ADB and no
+shared default directory. It opens the app to clear Android's stopped-package
+state, allows its background work and adds its startup service without removing
+other accessibility services. The unfinished installation may show the app's
+unavailable message; that is not a failed system switch.
+
+It does not grant new permissions, create the shared directory, write startup
+arguments or reboot. Missing shared defaults prevent the app from dispatching
+Google at this stage. Create defaults only through the later
+[daily finalization](first-install.md#commit-the-daily-files).
+
+Changes are checked and journaled individually. An interruption or outside
+settings change stops the tool without retrying or overwriting the changed
+settings. Completion verifies configuration, not that Android has bound the
+service or that a later boot will switch. This first-install helper has offline
+tests; it has not been applied to a fresh TV.
+
+```sh
+python3 -B tests/test-provision-switch-startup.py
+```
 
 ## Naming and compatibility
 

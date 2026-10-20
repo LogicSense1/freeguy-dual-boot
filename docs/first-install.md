@@ -7,8 +7,8 @@ and switch-service permissions. On the reference TV these were prepared during
 an earlier temporary Google boot. A fresh installation cannot start directly
 with the daily runtime.
 
-This guide covers that build and checked file staging. First-boot activation
-and switch-access provisioning are still being integrated.
+This guide covers assembly, file staging, switch access and daily finalization.
+First-boot activation and device-side pairing are still being integrated.
 It is not yet an end-to-end installation procedure.
 
 ## Inputs
@@ -20,6 +20,9 @@ It is not yet an end-to-end installation procedure.
   [build map](../BUILD.md). Retain exact hashes and the local signing key.
 - Prepare fresh data from this TV's own inputs using the [data guide](data.md).
   Never replace an existing installation's data with newly initialized files.
+- Install the stock switch APK and configure its
+  [startup binding](switch-app.md#first-install-startup-binding) while still in
+  HyperOS, before creating shared defaults. Retain the Google APK for temporary Google.
 - If the two file-backed environment images fail filesystem checks, use the
   [local copy preparation tool](data.md#prepare-clean-environment-copies).
   Retain the originals and use the verified new hashes in the input inventory.
@@ -356,7 +359,7 @@ Each step must be established on the recipient's own TV:
 3. Activate the exact one-time entry from the checked B console. Observe startup
    and independently verify both environment copies restored to HyperOS values.
 4. In temporary Google, prepare switch-service access, install
-   both switch apps and preserve this TV's remote pairing.
+   the Google switch app and preserve this TV's remote pairing.
 5. Commit shared state and replace the setup loader with the separately built
    daily loader through a reviewed file transaction. Retain the predecessor
    and matching app profiles.
@@ -365,8 +368,10 @@ Each step must be established on the recipient's own TV:
 
 The staging, verification, access and finalization tools cover individual parts
 of this sequence; their live first-install validation is outstanding.
-The coordinator, switch-app deployment and pairing integration still need to
-connect these parts. Do not fill these gaps with old AVB experiments, donor
+The coordinator and pairing integration still need to connect these parts.
+Switch APKs use the ordinary package-manager installation described in the
+[app guide](switch-app.md#first-install-startup-binding); startup configuration
+still requires later boot verification. Do not fill gaps with old AVB experiments, donor
 flashing, hand-edited environments or guessed service calls.
 
 ## Evidence
@@ -384,6 +389,7 @@ python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-first-switch-access.py
+python3 -B tests/test-provision-switch-startup.py
 JAVA_HOME=/path/to/jdk-17 python3 -B tests/test-finalize-first-install.py
 python3 -B tests/test-runtime-policy-start.py
 ```
