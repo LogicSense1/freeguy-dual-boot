@@ -32,8 +32,8 @@ ADB 和另一个槽位不能替代恢复通路。
 
 ## 源码预览
 
-已公开切换应用、默认启动策略、启动配置与镜像文件事务、HDMI／CEC、遥控器语音、
-麦克风适配及离线测试。正在补齐其余运行时、辅助应用和完整构建部署说明。
+已公开切换应用、默认启动策略、启动配置与镜像文件事务、内部启动运行时、HDMI／CEC、
+遥控器语音、麦克风适配及离线测试。正在补齐其余镜像构建工具、辅助应用和完整构建部署说明。
 当前仓库还不能安装完整电视系统。
 
 - `app/`：中英文切换界面、图标和启动状态逻辑。
@@ -41,6 +41,7 @@ ADB 和另一个槽位不能替代恢复通路。
 - `tools/build-switch-app.py`：APK 构建工具，见[构建说明](docs/switch-app.md)。
 - `tools/test-core.py`、`tests/`：只使用合成数据的离线测试。
 - `hdmi/`、`hdmi-label/`、`voice/`：[硬件适配与构建命令](docs/hardware.zh-CN.md)。
+- `runtime/`：[内部启动、回退与组件组装](docs/runtime.zh-CN.md)。
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17
