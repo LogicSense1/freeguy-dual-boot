@@ -7,8 +7,8 @@ and switch-service permissions. On the reference TV these were prepared during
 an earlier temporary Google boot. A fresh installation cannot start directly
 with the daily runtime.
 
-This guide covers the build that removes that dependency. Checked staging,
-first-boot activation and switch-access provisioning are still being integrated.
+This guide covers that build and checked file staging. First-boot activation
+and switch-access provisioning are still being integrated.
 It is not yet an end-to-end installation procedure.
 
 ## Inputs
@@ -108,9 +108,54 @@ must cause initial staging to stop.
 This performs no upload or device access. It neither establishes same-device
 provenance nor checks filesystem health; retain those records separately.
 An audit record describes an offline run, not a signature or a live test.
-The plan does not authorize installation. The future staging step must recheck
+The plan does not authorize installation. The staging step must recheck
 local inputs, the current TV, free space and every destination before writing.
 Do not use fresh data files to replace an existing installation.
+
+## Stage new files
+
+Return to the supported stock HyperOS B system and keep it running. This step
+requires its ordinary ADB shell (UID 2000), the same independently recorded device
+binding, and no attached loop images. It refuses existing staging, loader,
+shared-state or switch-proxy directories, including incomplete earlier uploads.
+It does not modify an installed Google environment.
+
+First inspect, using a new private journal directory:
+
+```sh
+python3 tools/stage-first-install.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/staging-inspect-01
+```
+
+After reviewing the result, use `stage` instead of `inspect`, with a different
+new output directory. All local inputs and device checks run again. The command
+requires free space for the complete set plus an 8 GiB reserve and checks the
+remaining reserve during transfer. It creates ordinary files only, using
+exclusive creation rather than overwriting targets.
+
+Each file is hashed after transfer and synced with its parent directory; the
+complete set is checked again at the end. The loader becomes executable only
+after its uploaded bytes match, but is **not executed**. The stage marker is
+written after the payloads. No boot arguments, firmware partitions or existing
+data files are written. The command never switches systems or reboots.
+
+On error, preserve the private `journal.json` and leave the files alone.
+`pending` identifies the unfinished operation; an upload records its host-client
+and remote-shell PIDs when available. A timeout or killed host client does not
+prove that the remote process stopped. Establish the current boot/process state
+and which files belong to that run before considering cleanup. There is no
+automatic retry, resume, deletion or rollback of a partial upload.
+A marker alone does not prove successful staging: require `complete: true`.
+
+The staging orchestration passed synthetic interruption tests and local-shell
+binary-transfer tests. Current-device read-only checks confirmed the metadata
+parser and refusal of the active Google installation. **A full upload to a fresh
+stock installation has not been tested on hardware.** Successful `fsync` calls
+are not a physical power-loss test.
 
 ## Remaining device sequence
 
@@ -129,9 +174,10 @@ Each step must be established on the recipient's own TV:
 6. Verify both switches, remembered defaults, retained data and serial recovery.
    Physical cold-power startup is a separate acceptance item.
 
-Complete checked commands for steps 1–5 are not yet provided. Do not fill these
-gaps with old AVB experiments, donor flashing, hand-edited environments or
-guessed service calls.
+The staging tool covers step 1; its live first-install validation is outstanding.
+Complete checked commands for steps 2–5 are not yet provided. Do not fill these
+gaps with old AVB experiments, donor flashing, hand-edited environments or guessed
+service calls.
 
 ## Evidence
 
@@ -143,5 +189,6 @@ checked 1,005 embedded entries. **This combination has not been booted on a TV.*
 ```sh
 python3 -B tests/test-first-install-root.py
 python3 -B tests/test-first-install-plan.py
+python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-runtime-policy-start.py
 ```

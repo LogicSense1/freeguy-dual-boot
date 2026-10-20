@@ -6,8 +6,8 @@
 本机当时是在较早的一轮临时 Google 启动中配置这些条件的，
 因此全新安装不能直接从日常环境开始。
 
-本页介绍去掉这项依赖的构建步骤。带校验的文件部署、首次启动激活和切换权限配置
-仍在整合，当前还不是完整安装流程。
+本页介绍去掉这项依赖的构建步骤及带校验的文件部署。
+首次启动激活和切换权限配置仍在整合，当前还不是完整安装流程。
 
 ## 输入
 
@@ -95,6 +95,46 @@ python3 tools/plan-first-install.py \
 清单不代表可以安装，后续部署工具仍须在写入前重新核对输入、当前电视、空间和全部目标。
 不要用首次空数据替换已有安装。
 
+## 部署新文件
+
+先回到受支持的原厂澎湃OS B 系统，保持正常运行。此步骤使用普通 ADB shell（UID 2000），
+要求身份与独立记录的设备绑定一致，并且没有已挂接的 loop 镜像。
+阶段目录、loader 目录、共享状态或切换代理目录只要已存在就拒绝，包括之前未完成的上传。
+它不用于修改已有 Google 安装。
+
+先检查，使用新的私有日志目录：
+
+```sh
+python3 tools/stage-first-install.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/staging-inspect-01
+```
+
+核对结果后，把 `inspect` 换成 `stage`，并换一个新的输出目录。
+命令会重新核对全部本地输入和设备状态。
+要求剩余空间能容纳完整文件集，并额外保留 8 GiB；传输过程中持续核对剩余量。
+只新建普通文件，使用独占创建，不能覆盖已有目标。
+
+每个文件上传后回读哈希，同步文件和父目录，最后再复查完整文件集。
+Loader 只有在上传哈希匹配后才增加执行权限，但**不会执行**。
+Stage 标记在文件上传完后写入。不写启动参数、固件分区或已有数据文件，
+也不会切换系统或重启。
+
+出错后保留私有 `journal.json`，不要立即处理残留文件。
+其中的 `pending` 标记未完成操作；上传期间能取得时会记录本机客户端和远端 shell 的 PID。
+超时或终止本机客户端，不代表远端进程已经停止。
+考虑清理前，必须核对当前启动与进程状态，并确认哪些文件属于这一轮。
+工具不会自动重试、续传、删除文件或撤销部分上传。
+仅有 stage 标记不能证明成功，必须检查日志中的 `complete: true`。
+
+部署流程已通过合成故障注入及本机 shell 二进制传输测试。
+电视只读检查验证了元数据解析，以及对当前 Google 安装的拒绝。
+**尚未在全新原厂安装上完成整套实际上传。**
+`fsync` 成功也不能代替物理断电测试。
+
 ## 后续设备步骤
 
 接收方必须在自己的电视上逐项完成：
@@ -107,7 +147,7 @@ python3 tools/plan-first-install.py \
 5. 通过已审查的文件事务换成单独构建的日常 loader，保留旧版本及匹配的应用配置。
 6. 验证双向切换、默认启动、数据保留和串口恢复。实际断电开机需单独验收。
 
-仓库尚未提供第 1–5 步完整、带校验的命令流程。
+部署工具覆盖第 1 步，尚待首次安装的实机验证；第 2–5 步的完整、带校验命令仍未提供。
 不要用旧 AVB 实验、海外固件直刷、手工修改环境文件或猜测的服务调用填补缺口。
 
 ## 证据
@@ -119,5 +159,6 @@ python3 tools/plan-first-install.py \
 ```sh
 python3 -B tests/test-first-install-root.py
 python3 -B tests/test-first-install-plan.py
+python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-runtime-policy-start.py
 ```
