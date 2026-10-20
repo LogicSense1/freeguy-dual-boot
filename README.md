@@ -21,6 +21,11 @@ until Google is explicitly selected again. This path has passed a live heartbeat
 ## Before using this code
 
 Read the [equipment and recovery requirements](docs/equipment.md).
+First installation needs a compatible HDMI-to-UART USB adapter, a computer with
+enough storage, verified backups outside the TV, Ethernet, a remote and access
+to stable mains power. Without a verified serial recovery route, stop at offline
+preparation. Daily use after installation does not require the adapter or computer.
+
 Without a verified HDMI serial connection, an early-boot failure may require
 paid repair or motherboard replacement. ADB and a spare slot are not substitutes.
 
