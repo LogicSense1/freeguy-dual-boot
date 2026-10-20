@@ -57,7 +57,8 @@ class FakeDevice:
         self.guard_calls += 1
         if self.reboot_at and self.guard_calls >= self.reboot_at:
             raise ValueError("rebooted")
-        return {"bootId": self.boot}
+        return {"bootId": self.boot, "deviceBindingSha256": fixture.BINDING,
+                "deviceBindingScheme": fixture.SCHEME}
 
     def capabilities(self): pass
     def searchable(self, path): pass

@@ -135,6 +135,39 @@ Stage 标记在文件上传完后写入。不写启动参数、固件分区或�
 **尚未在全新原厂安装上完成整套实际上传。**
 `fsync` 成功也不能代替物理断电测试。
 
+## 复查已部署文件及 loader 保护
+
+私下保留完成的部署日志，并独立记录其 SHA-256。
+验证工具重新计算本地清单、核对日志，再检查同一机主设备上的全部 21 个文件及标记。
+它要求当前部署工具记录的父目录身份，拒绝不完整或被改动的日志。
+不要编辑失败记录把它标为完成，也不要向已有文件重新执行首次部署。
+
+```sh
+python3 tools/verify-first-install.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --staging-record /private/staging-01/journal.json \
+  --staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256 \
+  --output /private/staged-verification-01
+```
+
+把 `inspect` 换成 `probe`，使用新输出目录，便会以普通 UID 2000 shell 执行一次已核对的 loader。
+其 ARM 检查必须证明非 PID 1 路径只执行 `getpid` 和 `exit(90)`，没有环境写入。
+远端脚本在执行前再次核对当前启动身份及 loader 哈希；
+只接受退出码 90 且没有异常输出，之后再检查 loader 哈希。
+这不代表验证了它作为 PID 1 的真实启动路径。
+
+如果部署后曾正常重启回原厂系统，必须完整复查文件和目录，验证记录会绑定本次启动。
+验证过程中重启、结果不符或超时，都会留下未完成记录，不自动重试。
+保留已经记录的进程信息，先查明不确定的执行状态，再考虑重试。
+
+此命令不改启动参数，也不授权激活启动。
+文件系统健康、启动参数兼容、已验证的串口撤销以及真正的首次启动，仍须分别检查。
+当前已测试合成验证流程和本机 shell 探测协议，
+通用探测命令尚未在新部署的电视安装上实际执行。
+
 ## 后续设备步骤
 
 接收方必须在自己的电视上逐项完成：
@@ -147,7 +180,7 @@ Stage 标记在文件上传完后写入。不写启动参数、固件分区或�
 5. 通过已审查的文件事务换成单独构建的日常 loader，保留旧版本及匹配的应用配置。
 6. 验证双向切换、默认启动、数据保留和串口恢复。实际断电开机需单独验收。
 
-部署工具覆盖第 1 步，尚待首次安装的实机验证；第 2–5 步的完整、带校验命令仍未提供。
+部署及验证工具覆盖第 1–2 步，尚待首次安装的实机验证；第 3–5 步的完整、带校验命令仍未提供。
 不要用旧 AVB 实验、海外固件直刷、手工修改环境文件或猜测的服务调用填补缺口。
 
 ## 证据
@@ -160,5 +193,6 @@ Stage 标记在文件上传完后写入。不写启动参数、固件分区或�
 python3 -B tests/test-first-install-root.py
 python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-first-install-stage.py
+python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-runtime-policy-start.py
 ```

@@ -157,6 +157,45 @@ parser and refusal of the active Google installation. **A full upload to a fresh
 stock installation has not been tested on hardware.** Successful `fsync` calls
 are not a physical power-loss test.
 
+## Verify staged files and the loader guard
+
+Keep the completed staging journal private and record its SHA-256 independently.
+The verification command recomputes the local inventory, checks that journal,
+and rechecks all 21 uploaded files plus the marker on the same owner device.
+It requires the parent-directory identities recorded by the current staging tool.
+It refuses incomplete or altered journals; do not edit a failed record to mark
+it complete or rerun staging over the files.
+
+```sh
+python3 tools/verify-first-install.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --staging-record /private/staging-01/journal.json \
+  --staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256 \
+  --output /private/staged-verification-01
+```
+
+Use `probe` instead of `inspect`, with a new output directory, to execute the
+checked loader once as the ordinary UID 2000 shell. Its ARM audit must show only
+`getpid` and `exit(90)` on the non-PID-1 path, with zero environment writes.
+The remote wrapper rechecks the current boot and loader hash immediately before
+execution. Only exit code 90 with no unexpected output passes; the loader is
+hashed again afterward. This does not exercise its PID-1 startup path.
+
+A later stock boot is allowed only after the full file and directory recheck;
+the verification records that new boot identity. A reboot during verification,
+wrong result or timeout leaves an incomplete report. The probe is never retried
+automatically. Keep any recorded process identifiers and resolve uncertain
+completion before running it again.
+
+The command does not change boot parameters or authorize activation.
+Filesystem consistency, compatible startup arguments, verified serial undo
+and actual first boot remain separate checks. Synthetic tests cover the
+verification sequence and local-shell probe protocol; the generalized probe
+has not been run on a newly staged TV installation.
+
 ## Remaining device sequence
 
 Each step must be established on the recipient's own TV:
@@ -174,10 +213,10 @@ Each step must be established on the recipient's own TV:
 6. Verify both switches, remembered defaults, retained data and serial recovery.
    Physical cold-power startup is a separate acceptance item.
 
-The staging tool covers step 1; its live first-install validation is outstanding.
-Complete checked commands for steps 2–5 are not yet provided. Do not fill these
-gaps with old AVB experiments, donor flashing, hand-edited environments or guessed
-service calls.
+The staging and verification tools cover steps 1–2; their live first-install
+validation is outstanding. Complete checked commands for steps 3–5 are not yet
+provided. Do not fill these gaps with old AVB experiments, donor flashing,
+hand-edited environments or guessed service calls.
 
 ## Evidence
 
@@ -190,5 +229,6 @@ checked 1,005 embedded entries. **This combination has not been booted on a TV.*
 python3 -B tests/test-first-install-root.py
 python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-first-install-stage.py
+python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-runtime-policy-start.py
 ```

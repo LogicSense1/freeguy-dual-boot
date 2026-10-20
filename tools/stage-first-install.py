@@ -206,6 +206,7 @@ def stage(device, plan, folder, apply=False):
     bound, parents = preflight(device, plan)
     record = dict(mode="first-install-stage", identity=bound, plan=plan, complete=False,
                   applied=False, pending=None, operations=[], files=[], directories={},
+                  parents=parents,
                   deviceWritesIssued=False, startupChanged=False, loaderExecuted=False, rebootIssued=False)
     save(folder, record)
     if not apply:
