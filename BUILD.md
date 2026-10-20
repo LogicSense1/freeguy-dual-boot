@@ -35,8 +35,10 @@ never be replaced by empty initialization images.
   [Early owner capture](docs/owner-capture.md), cold backup, local expansion
   and fresh empty data creation are documented.
 - Initial privileged installation, permissions and startup-service provisioning.
-- Device-side pairing installation and checked ADB-helper provisioning
+- Device-side pairing installation
   ([offline pairing preparation](docs/remote-pairing.md) is available).
+  [ADB-helper provisioning](docs/adb-helper.md#deployment-and-removal) has
+  offline tests; its new CLI still needs fresh-install hardware validation.
 - A complete installation runbook and recipient-specific serial undo acceptance.
   The CLI's write path has passed a live reference-device test; see
   [Recovery](RECOVERY.md) for its scope and limits.

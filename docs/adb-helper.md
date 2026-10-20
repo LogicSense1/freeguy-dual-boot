@@ -59,10 +59,52 @@ the version 4 APK has not been installed or reboot-tested on the TV.
 
 ## Deployment and removal
 
-Installation alone is insufficient. The deployment flow must record the current
-accessibility services, idle allowlist and background restrictions, grant the
-required permission, then enable only this service. The complete checked
-provisioning tool is not yet published.
+Installation alone is insufficient. Verify the supported stock B system and
+record the owner's device binding first. For a new installation, install the
+locally built `adb-helper.apk` using the explicitly selected ADB endpoint.
+Do not uninstall an existing helper or use an APK signed by an unrelated key
+to force an update.
+
+The provisioning tool requires the published version 4 to be installed already.
+It matches the installed APK hash to the reviewed local build. Start with an
+inspection:
+
+```sh
+python3 tools/provision-adb-helper.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --apk /private/new-adb-helper-build/adb-helper.apk \
+  --apk-sha256 VERIFIED_HELPER_APK_SHA256 \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --output /private/helper-inspect-01
+```
+
+Use `--binding-source android-serial` only if that was the explicitly recorded
+binding scheme. After reviewing the journal, use `enable` with a different new
+output directory. Every check runs again.
+
+The tool records and rechecks the accessibility list, permission, idle exemption
+and two background app-ops. It grants only this helper's required permission,
+allows its background operation and adds its idle exemption. It opens the helper
+to enable its own preference **before** binding the accessibility service;
+otherwise the service can immediately disable itself. Other selected services
+remain in their original order.
+
+It does not install APKs, edit OEM policy files, change startup parameters,
+reboot, disable ADB authentication or select a debugging port.
+Concurrent settings changes, a different boot or a failed operation stop the
+run. Keep `journal.json`; a pending operation may already have taken effect.
+Do not overwrite current settings with the entire saved snapshot or blindly
+rerun an incomplete operation.
+
+Seven offline tests cover service-list preservation, opt-in order, existing
+configuration, owner/boot checks and interruption at every device-operation
+boundary. The new provisioning CLI has not been applied to a fresh installation.
+`complete: true` means configuration and activity launch passed; it does not
+prove recovery after boot. Check that during the next planned system switch.
+
+```sh
+python3 -B tests/test-provision-adb-helper.py
+```
 
 Version 2 experimented with editing an OEM startup-policy file; that approach
 was replaced by the system-bound service after the OEM rewrote its policy.
