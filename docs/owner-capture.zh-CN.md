@@ -31,6 +31,11 @@ OTA 不包含本机校准和身份数据。此组件在原厂 Android 启动前�
 通用部署工具通过了离线中断测试和真实构建计划检查，尚未在全新电视上上传；
 参考实机测试使用的是保留已有安装的单独流程。
 
+`plan-owner-activation.py` 将原构建、完成的部署与退出保护记录、同一设备同次启动
+的原厂参数连接起来，检查完整命令行长度和精确撤销。参数见
+[启动计划](owner-capture.md#execution-and-recovery)。输出可供现有串口工具只读检查，
+但不会连接设备、授权写入或证明串口退路有效。
+
 **通用启动编排工具尚未发布。上传和非 PID 1 测试不代表可修改启动参数。**
 不要覆盖已有 `envdaily`，也不要猜测启动命令。
 
@@ -100,5 +105,6 @@ python3 tools/collect-owner-capture.py \
 ```sh
 python3 -B tests/test-collect-owner-capture.py
 python3 -B tests/test-stage-owner-capture.py
+python3 -B tests/test-plan-owner-activation.py
 python3 -B tests/test-remove-owner-stage.py
 ```

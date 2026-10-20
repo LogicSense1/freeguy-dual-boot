@@ -79,6 +79,34 @@ to a fresh TV; the reference live test preserved an existing daily installation.
 
 ## Execution and recovery
 
+`plan-owner-activation.py` joins the audited build, completed stage and refusal
+probe with a same-device, same-boot observation. The private observation contains
+`stockBootargs`, `observedBootargs`, `kernelCmdline`, `deviceBindingSha256`,
+`deviceBindingScheme` and `bootId`. Read the original values from the TV and the
+verified serial record; do not substitute a previous device's values.
+
+```sh
+python3 tools/plan-owner-activation.py \
+  --stock-boot /private/stock/boot.img \
+  --capture-build /private/owner-capture-01 \
+  --loader-build /private/owner-loader-01 \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --staging-record /private/owner-stage-01/journal.json \
+  --staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256 \
+  --verification-record /private/owner-probe-01/journal.json \
+  --verification-record-sha256 VERIFIED_PROBE_JOURNAL_SHA256 \
+  --boot-observation /private/owner-boot-observation.json \
+  --boot-observation-sha256 VERIFIED_OBSERVATION_SHA256 \
+  --recovery-profile /private/recovery-profile.json \
+  --output /private/owner-activation-plan-01
+```
+
+The output uses the shared first-activation format and can be checked by
+[`first-activation-console.py inspect`](first-install.md#inspect-the-stopped-serial-console).
+It checks the full command-line length and exact inverse. It does not contact
+the TV, authorize a write or demonstrate serial recovery.
+
 **The general activation coordinator for this capture is not published yet.**
 Staging and probing do not authorize startup changes. Do not improvise a
 bootloader command.
@@ -189,5 +217,6 @@ These tests do not model a storage controller or physical power loss.
 ```sh
 python3 -B tests/test-collect-owner-capture.py
 python3 -B tests/test-stage-owner-capture.py
+python3 -B tests/test-plan-owner-activation.py
 python3 -B tests/test-remove-owner-stage.py
 ```
