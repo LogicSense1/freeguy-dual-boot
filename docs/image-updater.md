@@ -68,9 +68,77 @@ These checks describe this implementation's provisioned layout. They are not
 instructions to recursively change ownership or labels on `/data`.
 Do not change the seven personal-data images to satisfy an updater check.
 
-The checked host-side permission provisioning tool is not yet included.
 An ordinary ADB shell or root invocation is not a substitute for the required
 UID and service context. Do not bypass a refused check.
+
+## Prepare access from the accepted Google runtime
+
+`tools/prepare-image-update-access.py` prepares an existing installation for the
+stock-side updater. It requires root ADB in the already validated Google runtime,
+the accepted helper's SHA-256, a healthy default state and the original f2fs
+userdata mount. It does not obtain that initial privileged access or transfer
+system images. Stage the four candidate files through the reviewed deployment
+path first; the tool verifies all eight old/new hashes.
+
+Do not switch systems, install another update or run a second preparation while
+this operation is in progress.
+
+Start with a read-only inspection and a new private output directory:
+
+```sh
+python3 tools/prepare-image-update-access.py \
+  --serial TV_ADB_SERIAL \
+  --helper-sha256 ACCEPTED_RUNTIME_HELPER_SHA256 \
+  inspect \
+  --build /private/image-update-01 \
+  --old-profile /private/installed-profile.json \
+  --new-profile /private/candidate-profile.json \
+  --output /private/update-access-inspection-01
+```
+
+Review the private journal. To perform preparation, use the same inputs with
+`prepare` instead of `inspect` and a different output directory. A probe build
+also needs `--probe`; it creates only the fixed disposable fixture contents.
+
+Preparation can change ownership, mode and label on the three image directories,
+and labels on the eight old/new immutable files. It preserves the original
+metadata in the journal. It creates the updater directory when absent, then
+copies the content-addressed DEX and optional probe files. An existing file must
+already match its expected bytes and metadata; it is never overwritten. No
+physical partition, boot argument or personal-data image is written.
+
+Each operation is recorded before dispatch. Readback checks all eight image
+hashes, access settings, artifact hashes and the seven personal-data files'
+metadata. Those data images remain in use by Google: this is **not** a cold
+data backup or a claim that their contents remain static.
+
+After a completed preparation, while still in the same Google boot and before
+applying the image update, the previous access settings can be restored:
+
+```sh
+python3 tools/prepare-image-update-access.py \
+  --serial TV_ADB_SERIAL \
+  --helper-sha256 ACCEPTED_RUNTIME_HELPER_SHA256 \
+  restore-metadata --run /private/update-access-preparation-01
+```
+
+Restoration checks board binding, boot, watchdog, file identities and original
+hashes. It retains newly created DEX/probe files and directories; it deletes
+nothing. Once images have been replaced or the TV has rebooted, this automatic
+restoration is refused.
+
+An interrupted preparation or restoration is not automatically retried. Keep its
+journal, establish that the previous command has stopped, and review actual
+metadata before an explicit recovery. Partial new files are retained and
+rejected on the next preflight. Do not remove evidence or repeat `prepare` until
+the interrupted operation has been resolved.
+
+The new tool passed synthetic preparation/restoration tests and 44 before/after
+write-interruption cases. Its runtime guard and six fixed-path metadata reads
+were checked on the TV without writes. The new preparation and restoration
+commands have **not** been exercised on the TV. The earlier device-specific
+script's successful preparation does not establish that this new wrapper is
+fully validated.
 
 ## Start and observe a provisioned updater
 
@@ -163,6 +231,7 @@ change from Xiaomi to HyperOS. That fresh DEX has not been deployed.
 ```sh
 python3 -B tests/test-image-updater.py
 python3 -B tests/test-run-image-updater.py
+python3 -B tests/test-prepare-image-update-access.py
 python3 tools/test-core.py --java-home /path/to/jdk-17
 ```
 

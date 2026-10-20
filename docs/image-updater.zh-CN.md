@@ -60,8 +60,63 @@ Java 执行程序要求：
 这些是当前实现的目录约定，不是让你递归修改 `/data` 的所有权或标签。
 不要为了满足检查而修改七个个人数据镜像。
 
-带校验的主机侧权限配置工具尚未公开。
 普通 ADB shell 或 root 运行不能代替要求的 UID 和服务上下文；不要绕过拒绝条件。
+
+## 在已验证的 Google 环境中配置权限
+
+`tools/prepare-image-update-access.py` 为已有安装配置原厂系统侧更新器所需的权限。
+它要求已验证 Google 环境中的 root ADB、固定的 helper SHA-256、
+健康的默认启动状态及原始 f2fs 数据卷。
+它不负责取得首次安装所需的特权，也不传输系统镜像。
+先通过已审查的部署路径放好四个候选文件；工具会核对全部八个新旧文件哈希。
+
+执行期间不要切换系统、运行其他更新，或同时启动第二次权限配置。
+
+先只读检查，输出到仓库之外的新目录：
+
+```sh
+python3 tools/prepare-image-update-access.py \
+  --serial TV_ADB_SERIAL \
+  --helper-sha256 ACCEPTED_RUNTIME_HELPER_SHA256 \
+  inspect \
+  --build /private/image-update-01 \
+  --old-profile /private/installed-profile.json \
+  --new-profile /private/candidate-profile.json \
+  --output /private/update-access-inspection-01
+```
+
+检查私有记录后，用同样的输入将 `inspect` 改为 `prepare`，并换一个新的输出目录。
+测试文件构建还需要 `--probe`；它只生成固定内容的临时测试文件。
+
+配置过程可以修改三个镜像目录的所有权、权限和标签，以及八个新旧不可变文件的标签，
+原元数据保存在记录中。更新器目录不存在时会创建，再复制以哈希命名的 DEX 和可选测试文件。
+已有文件必须已经符合预期内容与元数据，工具不会覆盖它。
+它不写物理分区、启动参数或个人数据镜像。
+
+每次下发操作前先记入本地记录。结束时复查八个镜像哈希、权限、辅助文件哈希，
+以及七个个人数据文件的元数据。Google 仍在使用这些数据镜像，
+因此这**不是冷备份，也不证明个人数据内容保持静止**。
+
+配置完成后，在同一次 Google 启动内、尚未应用镜像更新时，可以恢复原权限：
+
+```sh
+python3 tools/prepare-image-update-access.py \
+  --serial TV_ADB_SERIAL \
+  --helper-sha256 ACCEPTED_RUNTIME_HELPER_SHA256 \
+  restore-metadata --run /private/update-access-preparation-01
+```
+
+恢复会核对主板绑定、启动、watchdog、文件身份和原哈希。
+新创建的 DEX、测试文件及目录保留，不做删除。
+更换过镜像或电视已经重启后，会拒绝自动恢复这些旧权限。
+
+配置或恢复中断后，不会自动重试。保留记录，确认上一条命令已经停止，
+检查实际元数据后再明确执行恢复。未写完的新文件会保留，并在下一次检查时被拒绝。
+不要删除现场记录，也不要在未解决中断状态时重复 `prepare`。
+
+新版通过了合成设备上的配置／恢复测试和 44 个写入前后中断场景。
+运行环境校验及六处固定路径的元数据读取已在电视上只读检查。
+新版配置和恢复命令**尚未实机执行**；旧版专用脚本曾成功配置，不等于新版已经全部验证。
 
 ## 启动与继续观察
 
@@ -142,6 +197,7 @@ python3 tools/run-image-updater.py observe \
 ```sh
 python3 -B tests/test-image-updater.py
 python3 -B tests/test-run-image-updater.py
+python3 -B tests/test-prepare-image-update-access.py
 python3 tools/test-core.py --java-home /path/to/jdk-17
 ```
 
