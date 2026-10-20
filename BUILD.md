@@ -34,8 +34,9 @@ never be replaced by empty initialization images.
 - Initial privileged installation, permissions and startup-service provisioning.
 - Device-side pairing installation and checked ADB-helper provisioning
   ([offline pairing preparation](docs/remote-pairing.md) is available).
-- Live acceptance of the standalone serial undo CLI and a complete installation
-  runbook. The [recovery guide](RECOVERY.md) documents the available checks.
+- A complete installation runbook and recipient-specific serial undo acceptance.
+  The CLI's write path has passed a live reference-device test; see
+  [Recovery](RECOVERY.md) for its scope and limits.
 
 Component sources and checks are available; the checkout is not yet a complete
 installer. Do not infer missing deployment commands from historical experiments.

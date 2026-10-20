@@ -5,12 +5,18 @@
 The original B system is the fallback. A is not a rescue system on the tested TV:
 it has a known verity failure. Keep the B boot chain and partition layout intact.
 
-The public recovery CLI has passed offline tests and a local pseudo-terminal
-test. Its underlying console procedure was used during device recovery, but
-the standalone CLI's `inspect` and `restore` modes have not completed a live
-console test. Its separate `verify-persisted` mode has read the physical
-environment on the running reference TV and matched both files to the owner's
-stock profile. That mode does not test serial writes or a subsequent boot.
+The public recovery CLI has passed 21 tests, including a local pseudo-terminal
+test, and an on-device console test on the reference TV. `inspect` checked the
+stopped B console; the exact temporary arguments were then prepared in RAM only.
+`restore` removed them, saved the stock configuration and passed a fresh console
+inspection. A normal reset reached HyperOS B. The TV's switch app then entered
+Google, where `verify-persisted` read both physical environment files and matched
+them to the owner's stock profile.
+
+This tested the restore write path without deliberately saving a faulty startup
+configuration. It does not establish recovery from arbitrary failures, interrupted
+writes or damaged firmware. Physical cold-power testing of this rebuilt installation
+remains pending.
 
 ## What is saved
 
