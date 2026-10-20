@@ -110,9 +110,10 @@ After an actual checked arm transaction, the shared
 [normal-boot observer](first-install.md#observe-the-first-normal-boot) accepts
 the corresponding owner-capture plan and arm journal.
 
-**The general activation coordinator for this capture is not published yet.**
-Staging and probing do not authorize startup changes. Do not improvise a
-bootloader command.
+Use the [activation coordinator](activation.md) to check retained backup and
+serial-undo evidence together with staging and probing before arming the entry.
+Staging and probing alone do not authorize startup changes. The coordinator's
+fresh-install hardware validation remains outstanding.
 
 The reference test used the already verified original-B entry and serial undo.
 It retained the installed daily loader, selected HyperOS as the default,

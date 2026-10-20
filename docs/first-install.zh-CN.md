@@ -7,7 +7,7 @@
 因此全新安装不能直接从日常环境开始。
 
 本页介绍构建、文件部署、切换权限准备和日常文件提交。
-首次启动激活仍在整合，当前还不是完整安装流程。
+首次启动协调程序已提供，但整套流程尚未在全新安装的电视上验收。
 
 ## 输入
 
@@ -223,14 +223,14 @@ python3 tools/first-activation-console.py inspect \
 原厂初始化标记及逐字一致的原厂参数。它只保存电脑端的私有日志，不会截停运行中的电视，
 也不授权启动配置写入。
 
-模块内包含供后续安装程序调用的写入事务：每条命令发送前保存意图，
+模块内包含协调程序调用的写入事务：每条命令发送前保存意图，
 临时参数在 RAM 中回读匹配后才执行 `saveenv`，保存前后都核对 B 状态。
 不发送重启、启动、AVB、槽位或重试计数写入命令。
 响应或日志写入失败即停止，不重试，也不自动撤销。
 `saveenv` 确认和 RAM 回读不等于已验证持久存储或实际启动。
 
-独立命令目前只开放检查。安装协调程序仍需接入备份、同机串口撤销、
-文件系统健康和最新文件验证，才能调用写入组件。
+独立命令只开放检查。[激活协调程序](activation.zh-CN.md)负责核对备份、
+同机串口撤销、文件系统健康和完整部署／探针记录，再调用写入组件。
 合成测试覆盖每条命令与日志写入的中断边界，本地伪终端测试覆盖实际串口传输代码；
 新事务尚未用于电视的首次安装激活。
 
@@ -335,8 +335,8 @@ python3 tools/finalize-first-install.py inspect \
    保留旧版本及匹配的应用配置。
 6. 验证双向切换、默认启动、数据保留和串口恢复。实际断电开机需单独验收。
 
-部署、校验、权限准备和日常文件提交工具已覆盖其中的独立步骤，尚待首次安装的实机验证。
-启动协调程序仍需把这些部分接起来。
+部署、校验、激活、权限准备和日常文件提交工具已覆盖各独立步骤，
+完整组合仍待全新安装的实机验证。
 两侧 APK 使用[应用指南](switch-app.zh-CN.md)中的普通安装命令，开机配置仍需后续实测。
 不要用旧 AVB 实验、海外固件直刷、手工修改环境文件或猜测的服务调用填补缺口。
 
@@ -353,6 +353,7 @@ python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
+python3 -B tests/test-activate-first-entry.py
 python3 -B tests/test-boot-first-entry.py
 python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-provision-switch-startup.py

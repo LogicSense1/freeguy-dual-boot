@@ -29,22 +29,20 @@ images. Those must be prepared for the recipient TV. An OTA package does not
 contain its calibration, pairing records or personal data. Existing data must
 never be replaced by empty initialization images.
 
-## Still missing from the published workflow
+## Deployment and validation
 
-- General activation and checked deployment of same-device backing data.
-  [Early owner capture](docs/owner-capture.md), cold backup, local expansion
-  and fresh empty data creation are documented.
-- Initial privileged installation, permissions and startup-service provisioning.
-- Device-side pairing installation
-  ([offline pairing preparation](docs/remote-pairing.md) is available).
-  [ADB-helper provisioning](docs/adb-helper.md#deployment-and-removal) has
-  offline tests; its new CLI still needs fresh-install hardware validation.
-- A complete installation runbook and recipient-specific serial undo acceptance.
-  The CLI's write path has passed a live reference-device test; see
-  [Recovery](RECOVERY.md) for its scope and limits.
+[First installation](docs/first-install.md) links file staging, activation,
+switch access, package installation and daily finalization.
+[Early owner capture](docs/owner-capture.md), [activation](docs/activation.md),
+[shared pairing](docs/remote-pairing.md) and [ADB-helper provisioning](docs/adb-helper.md)
+have separate tools and evidence requirements.
 
-Component sources and checks are available; the checkout is not yet a complete
-installer. Do not infer missing deployment commands from historical experiments.
+The assembled fresh-install procedure has not completed a hardware run.
+Component tests and the existing TV's acceptance do not establish that result.
+Each recipient must also demonstrate serial undo on their own TV; the public
+undo CLI's write path has passed a live reference-device test within the limits
+in [Recovery](RECOVERY.md). Do not fill a failed prerequisite with an improvised
+bootloader command.
 
 ## Verification
 

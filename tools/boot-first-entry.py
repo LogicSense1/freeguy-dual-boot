@@ -205,7 +205,9 @@ def main():
     allowed = recovery.read_profile(a.recovery_profile)
     check_arm(plan, arm, allowed)
     recovery.private_output(a.output)
-    recovery.private_output(a.armed_record)
+    private_record = a.armed_record.resolve()
+    need(ROOT != private_record and ROOT not in private_record.parents,
+         "The existing arm journal and its reset claim must stay outside the repository")
     claimed = a.armed_record.with_name(a.armed_record.name + ".first-boot-issued")
     need(not claimed.exists() and not claimed.is_symlink(),
          "This arm journal already has a reset claim; no serial connection opened")

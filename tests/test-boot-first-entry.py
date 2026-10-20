@@ -4,6 +4,7 @@
 import copy
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,8 @@ import tempfile
 import threading
 import tty
 import unittest
+from contextlib import redirect_stdout
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -55,6 +58,9 @@ class Console:
         self.calls.append(raw)
         if self.fail_send:
             raise OSError("delivery uncertain")
+
+    def close(self):
+        pass
 
 
 class Tests(unittest.TestCase):
@@ -202,6 +208,36 @@ class Tests(unittest.TestCase):
         finally:
             os.close(master)
             os.close(slave)
+
+    def test_cli_accepts_existing_private_arm_record_before_one_reset(self):
+        plan = self.root / "plan.json"
+        plan.write_text(json.dumps(self.plan))
+        profile = self.root / "profile.json"
+        profile.write_text(json.dumps(dict(device="freeguy", model="L75MA-SPL",
+                                           bootloader="01.01.250225",
+                                           normalizedBootargsSha256=fixture.ALLOWED)))
+        output = self.root / "cli-output"
+        args = ["boot-first-entry.py", "--port", "/dev/cu.synthetic",
+                "--activation-plan", str(plan), "--activation-plan-sha256",
+                hashlib.sha256(plan.read_bytes()).hexdigest(),
+                "--armed-record", str(self.record), "--armed-record-sha256", self.digest,
+                "--recovery-profile", str(profile), "--output", str(output)]
+        # Retain the real CLI parsing, input validation and durable journals.
+        # Only the serial connection and time-consuming observation are simulated.
+        def send(raw):
+            saved = json.loads((output / "journal.json").read_text())
+            self.assertEqual(saved["pending"], "normal-reset")
+            self.assertEqual(raw, b"reset\r")
+            self.console.calls.append(raw)
+        self.console.send = send
+        def observed(console, folder, seconds, record, checkpoint):
+            return dict(record, outcome="kernel-observed", kernelEntries=1, consoleCaught=False)
+        with patch.object(m.sys, "argv", args), \
+             patch.object(m.recovery, "Console", return_value=self.console), \
+             patch.object(m, "observe", side_effect=observed), redirect_stdout(io.StringIO()) as stdout:
+            m.main()
+        self.assertTrue(json.loads(stdout.getvalue())["resetIssued"])
+        self.assertEqual(self.console.calls.count(b"reset\r"), 1)
 
 
 if __name__ == "__main__":

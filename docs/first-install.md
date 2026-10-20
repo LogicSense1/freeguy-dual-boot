@@ -8,8 +8,8 @@ an earlier temporary Google boot. A fresh installation cannot start directly
 with the daily runtime.
 
 This guide covers assembly, file staging, switch access and daily finalization.
-First-boot activation is still being integrated.
-It is not yet an end-to-end installation procedure.
+The activation coordinator is available, but this complete sequence has not
+been validated on a fresh TV installation.
 
 ## Inputs
 
@@ -260,16 +260,17 @@ unchanged slot/retry state, stock initialization flags and exact stock arguments
 It writes only private host-side logs. It does not stop a running TV or authorize
 activation.
 
-The module also contains the write transaction for the future installer. It
+The module also contains the write transaction used by the coordinator. It
 records intent before each command, checks the temporary entry in RAM before
 `saveenv`, and checks B state before and after saving. It never sends reset,
 boot, AVB, slot or retry-counter writes. A failed response or checkpoint stops
 the transaction without retry or automatic undo. `saveenv` acknowledgement and
 RAM readback do not prove persistent storage or a successful boot.
 
-The standalone CLI deliberately exposes only inspection. Backups, same-device
-serial undo, filesystem health and fresh file verification still need to be
-joined by the installation coordinator before it can call the write component.
+The standalone CLI deliberately exposes only inspection. Use the
+[activation coordinator](activation.md) to check backups, same-device serial
+undo, filesystem health and completed staging/probe records before calling the
+write component.
 Synthetic failure tests cover every command/checkpoint boundary; a local PTY
 test exercises the actual serial transport. This new transaction has not been
 used to activate a first installation on the TV.
@@ -291,7 +292,7 @@ python3 tools/boot-first-entry.py \
   --seconds 180
 ```
 
-This does not perform the missing pre-activation checks or arm an entry. It
+This does not perform pre-activation checks or arm an entry. It
 requires a fresh stopped B console, unchanged supported B state and the exact
 armed arguments. It records a one-use claim beside the arm journal before
 sending one ordinary `reset`. An uncertain delivery is not retried. Keep that
@@ -407,9 +408,8 @@ Each step must be established on the recipient's own TV:
 6. Verify both switches, remembered defaults, retained data and serial recovery.
    Physical cold-power startup is a separate acceptance item.
 
-The staging, verification, access and finalization tools cover individual parts
-of this sequence; their live first-install validation is outstanding.
-The activation coordinator still needs to connect these parts.
+The staging, verification, activation, access and finalization tools cover these
+individual steps; their combined live first-install validation is outstanding.
 Switch APKs use the ordinary package-manager installation described in the
 [app guide](switch-app.md#first-install-startup-binding); startup configuration
 still requires later boot verification. Do not fill gaps with old AVB experiments, donor
@@ -429,6 +429,7 @@ python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
+python3 -B tests/test-activate-first-entry.py
 python3 -B tests/test-boot-first-entry.py
 python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-provision-switch-startup.py
