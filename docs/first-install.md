@@ -274,6 +274,46 @@ Synthetic failure tests cover every command/checkpoint boundary; a local PTY
 test exercises the actual serial transport. This new transaction has not been
 used to activate a first installation on the TV.
 
+## Observe the first normal boot
+
+After a checked activation transaction has returned `armed-not-booted`, use its
+original journal and the matching plan:
+
+```sh
+python3 tools/boot-first-entry.py \
+  --port /dev/YOUR_VERIFIED_SERIAL_PORT \
+  --activation-plan /private/first-activation-plan-01/journal.json \
+  --activation-plan-sha256 VERIFIED_ACTIVATION_PLAN_SHA256 \
+  --armed-record /private/first-activation-01/journal.json \
+  --armed-record-sha256 VERIFIED_ARM_JOURNAL_SHA256 \
+  --recovery-profile /private/serial-recovery-profile.json \
+  --output /private/first-boot-observation-01 \
+  --seconds 180
+```
+
+This does not perform the missing pre-activation checks or arm an entry. It
+requires a fresh stopped B console, unchanged supported B state and the exact
+armed arguments. It records a one-use claim beside the arm journal before
+sending one ordinary `reset`. An uncertain delivery is not retried. Keep that
+claim and the original journals; copying or editing them does not make another
+attempt safe.
+
+UART is recorded privately for the bounded observation window, up to 64 MiB.
+If another early boot is observed, the tool attempts to stop it with spaces,
+and stops sending as soon as the prompt or another kernel entry appears.
+It never sends AVB, slot, retry-counter or firmware commands. Interception is
+best effort and does not replace a usable serial undo or physical recovery.
+
+`kernel-observed` means only that the UART marker appeared. A timeout without
+that marker is not permission to reset again. Inspect the journal and actual
+TV state; verify Android startup, physical output and the restored environment
+separately. If stopped at the console, use the verified recovery procedure.
+The tool never declares an operational system from UART alone.
+
+The command has synthetic and local PTY tests. Its parser also replayed the
+reference TV's normal capture boot with several chunk sizes without requesting
+an interruption. The new reset command has not been used on a TV.
+
 ## Switch access in temporary Google
 
 `tools/prepare-first-switch-access.py` checks the bounded first-install runtime,
@@ -389,6 +429,7 @@ python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
+python3 -B tests/test-boot-first-entry.py
 python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-provision-switch-startup.py
 python3 -B tests/test-install-first-remote.py

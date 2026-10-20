@@ -106,6 +106,9 @@ The output uses the shared first-activation format and can be checked by
 [`first-activation-console.py inspect`](first-install.md#inspect-the-stopped-serial-console).
 It checks the full command-line length and exact inverse. It does not contact
 the TV, authorize a write or demonstrate serial recovery.
+After an actual checked arm transaction, the shared
+[normal-boot observer](first-install.md#observe-the-first-normal-boot) accepts
+the corresponding owner-capture plan and arm journal.
 
 **The general activation coordinator for this capture is not published yet.**
 Staging and probing do not authorize startup changes. Do not improvise a

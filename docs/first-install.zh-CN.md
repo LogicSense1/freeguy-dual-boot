@@ -234,6 +234,28 @@ python3 tools/first-activation-console.py inspect \
 合成测试覆盖每条命令与日志写入的中断边界，本地伪终端测试覆盖实际串口传输代码；
 新事务尚未用于电视的首次安装激活。
 
+## 观察首次正常启动
+
+激活事务完成并返回 `armed-not-booted` 后，使用
+[`boot-first-entry.py`](first-install.md#observe-the-first-normal-boot)，
+传入原始激活日志、对应计划、各自 SHA-256、恢复配置、串口和新的私有输出目录。
+它不替代前置检查，也不设置启动入口。
+
+工具要求新的原厂 B 串口提示符、未变化的 B 状态及准确的临时参数。
+发送一次普通 `reset` 前，先在激活日志旁写入一次性使用记录。
+送达不确定时也不重发；不要复制、修改或删除记录来重试。
+
+串口记录受时间和 64 MiB 上限约束。观察到再次早期启动时尝试发送空格截停，
+一旦出现提示符或新的内核入口就停止输入。不发送 AVB、切槽、重试计数或固件命令。
+截停不保证成功，不能代替串口撤销和现场恢复通道。
+
+`kernel-observed` 只表示看到了内核标记。超时没看到标记也不能据此再次重启，
+必须核对日志和当前电视状态。Android 启动、实体画面、物理启动环境恢复仍要单独检查；
+若停在串口提示符，执行已经验证的恢复流程。
+
+新命令通过合成输入和本机伪终端测试；解析器用本机正常采集启动日志按不同分块回放，
+没有误发截停请求。新重启命令尚未在电视上执行。
+
 ## 临时 Google 中的切换权限
 
 `tools/prepare-first-switch-access.py` 检查限时安装环境、本机身份、
@@ -331,6 +353,7 @@ python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
+python3 -B tests/test-boot-first-entry.py
 python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-provision-switch-startup.py
 python3 -B tests/test-install-first-remote.py
