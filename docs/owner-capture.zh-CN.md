@@ -24,7 +24,14 @@ OTA 不包含本机校准和身份数据。此组件在原厂 Android 启动前�
 
 ## 执行与退路
 
-**通用采集部署／启动编排工具尚未发布。构建命令不会安装或启动它。**
+全新安装可用 `stage-owner-capture.py inspect` 检查，再以 `stage` 上传、
+`probe` 验证非 PID 1 的退出保护，完整参数见[英文部署说明](owner-capture.md#stage-a-fresh-capture)。
+它复用首次安装的排他创建、哈希回读和同步逻辑，只新建加载器和标记。
+发现已有 Google 数据、加载器、共享设置、代理或采集目录即拒绝。
+通用部署工具通过了离线中断测试和真实构建计划检查，尚未在全新电视上上传；
+参考实机测试使用的是保留已有安装的单独流程。
+
+**通用启动编排工具尚未发布。上传和非 PID 1 测试不代表可修改启动参数。**
 不要覆盖已有 `envdaily`，也不要猜测启动命令。
 
 参考测试沿用已验证的原厂 B 入口和串口撤销：保留现用加载器，先选澎湃OS
@@ -72,6 +79,17 @@ python3 tools/collect-owner-capture.py \
 采集启动的 `/proc/cmdline` 仍含临时参数，即使已保存的参数恢复正常，
 切换应用也会正确拒绝这个过渡状态。
 
+## 释放临时入口
+
+首次采集的目录占用了后续安装需要的路径。`remove-owner-stage.py` 仅允许在完成
+取回、正常重启至澎湃OS后，核对原构建、部署日志、本地备份、设备归属和启动参数，
+再删除本次部署的加载器与标记，最后移除空目录。目录中有额外文件即拒绝。
+采集文件和其他数据保留，不递归删除、不自动重试，也不自动续跑部分清理。
+
+先用 `inspect`，检查后才以新日志目录运行 `remove`，参数见
+[清理命令](owner-capture.md#release-the-temporary-entry)。
+工具通过离线中断及拒绝测试，尚未在全新安装上进行实机清理。
+
 ## 验证范围
 
 原生程序通过 24 项系统调用／失败模拟；真实 ARM CRC 单独测试五组向量，
@@ -81,4 +99,6 @@ python3 tools/collect-owner-capture.py \
 
 ```sh
 python3 -B tests/test-collect-owner-capture.py
+python3 -B tests/test-stage-owner-capture.py
+python3 -B tests/test-remove-owner-stage.py
 ```

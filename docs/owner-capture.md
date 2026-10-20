@@ -45,11 +45,43 @@ python3 tools/audit-loader.py --build /private/owner-loader-01
 The generated root and loader contain OEM files. They must stay outside Git.
 The ordinary Google loader build remains unchanged.
 
+## Stage a fresh capture
+
+This path is for a fresh stock installation only. It refuses an existing Google
+data directory, loader, shared preference, proxy or capture directory. Do not
+use it to replace an installed loader.
+
+```sh
+python3 tools/stage-owner-capture.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --stock-boot /private/stock/boot.img \
+  --capture-build /private/owner-capture-01 \
+  --loader-build /private/owner-loader-01 \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/owner-stage-inspect-01
+```
+
+After inspection, use `stage` with a new output directory. It creates only
+`/data/local/tmp/rd-root/envdaily` and `owner-capture-stage-v1` in a new directory.
+The uploader uses exclusive creation, checks metadata and hashes, and syncs
+files and parent directories. It does not execute the loader.
+
+Use `probe` with the same build/owner arguments, a new output directory, and
+`--staging-record /private/owner-stage-01/journal.json
+--staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256`.
+The shared probe protocol rechecks the files and runs the audited non-PID-1
+path, which must exit 90 without environment writes.
+
+The generalized staging/probe path has synthetic interruption tests and a
+verified local plan built from the live-tested capture. It has not uploaded
+to a fresh TV; the reference live test preserved an existing daily installation.
+
 ## Execution and recovery
 
-**The general staging/activation coordinator for this capture is not published
-yet. These build commands do not install or activate it.** Do not copy it over
-an existing `envdaily` file or improvise a bootloader command.
+**The general activation coordinator for this capture is not published yet.**
+Staging and probing do not authorize startup changes. Do not improvise a
+bootloader command.
 
 The reference test used the already verified original-B entry and serial undo.
 It retained the installed daily loader, selected HyperOS as the default,
@@ -112,6 +144,40 @@ HyperOS before using the switch app. The capture boot still has temporary
 arguments in `/proc/cmdline`, even though the saved configuration was restored.
 The switch app correctly rejects that transitional command line.
 
+## Release the temporary entry
+
+A fresh capture's staging directory occupies the name needed by first
+installation. `remove-owner-stage.py` can release it only after a completed
+capture and a later, normal HyperOS boot. It requires the original source
+build, staging journal, retained local data and recovery profile.
+
+```sh
+python3 tools/remove-owner-stage.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL_OR_ENDPOINT \
+  --stock-boot /private/stock/boot.img \
+  --capture-build /private/owner-capture-01 \
+  --loader-build /private/owner-loader-01 \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --staging-record /private/owner-stage-01/journal.json \
+  --staging-record-sha256 VERIFIED_STAGING_JOURNAL_SHA256 \
+  --captured-data /private/owner-data-01 \
+  --capture-manifest-sha256 VERIFIED_CAPTURE_MANIFEST_SHA256 \
+  --recovery-profile /private/recovery-profile.json \
+  --output /private/owner-remove-inspect-01
+```
+
+After review, use `remove` with a new journal directory. It rechecks owner
+binding, stock command line, both staged file identities/hashes and the
+independent capture. Any extra directory entry causes refusal.
+It unlinks only the loader and marker, then removes the empty directory.
+Captured files and other data remain intact.
+
+There is no recursive delete, automatic retry or partial-cleanup resume.
+An interrupted removal leaves its pending journal; establish the actual state
+before continuing. The removal tool has offline interruption/refusal tests,
+not a fresh-install hardware test.
+
 ## Evidence limits
 
 The native audit covers 24 syscall/failure scenarios. Five vectors separately
@@ -122,4 +188,6 @@ These tests do not model a storage controller or physical power loss.
 
 ```sh
 python3 -B tests/test-collect-owner-capture.py
+python3 -B tests/test-stage-owner-capture.py
+python3 -B tests/test-remove-owner-stage.py
 ```
