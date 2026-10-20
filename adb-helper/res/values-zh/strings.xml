@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">调试连接</string>
+    <string name="recovery_enabled">ADB 自动恢复已开启</string>
+    <string name="notification_action">点按管理</string>
+    <string name="turn_off">关闭自动恢复</string>
+    <string name="done">完成</string>
+</resources>

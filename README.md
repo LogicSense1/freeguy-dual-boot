@@ -46,6 +46,8 @@ instructions are being imported. This checkout cannot yet install the complete T
 - `hdmi/`, `hdmi-label/`, `voice/`: [hardware adapters and build commands](docs/hardware.md).
 - `runtime/`: [internal startup, rollback and component assembly](docs/runtime.md).
 - Image builders: [official-input extraction and local assembly](docs/images.md).
+- `adb-helper/`: [HyperOS debugging recovery](docs/adb-helper.md).
+- [Shared remote pairing](docs/remote-pairing.md): offline preparation and device sequence.
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17

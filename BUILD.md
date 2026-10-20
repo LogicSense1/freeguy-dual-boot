@@ -14,6 +14,7 @@ Read [equipment](docs/equipment.md), [the incident](docs/incident.md) and
 | Build HDMI, CEC, voice and microphone adapters | [Hardware](docs/hardware.md) | Local APKs, DEX and audio adapter |
 | Build internal startup | [Runtime](docs/runtime.md) | Helper, bootstrap root, runtime root and early loader |
 | Build both switch apps | [Switch app](docs/switch-app.md) | English/Chinese UI, target-specific launcher icons |
+| Build the HyperOS ADB helper | [ADB recovery](docs/adb-helper.md) | Owner-signed helper APK |
 
 The order has dependencies: VNDK packaging precedes framework images; policy
 compilation precedes the vendor image; final image and component hashes go into
@@ -29,7 +30,8 @@ never be replaced by empty initialization images.
 
 - Preparation and checked deployment of same-device backing data.
 - Initial privileged installation, permissions and startup-service provisioning.
-- Pairing synchronization and the ADB recovery helper.
+- Device-side pairing installation and checked ADB-helper provisioning
+  ([offline pairing preparation](docs/remote-pairing.md) is available).
 - A complete user-operable serial undo and installation runbook.
 
 Component sources and checks are available; the checkout is not yet a complete

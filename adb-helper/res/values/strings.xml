@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ADB recovery</string>
+    <string name="recovery_enabled">Automatic ADB recovery is on</string>
+    <string name="notification_action">Tap to manage</string>
+    <string name="turn_off">Turn off automatic recovery</string>
+    <string name="done">Done</string>
+</resources>

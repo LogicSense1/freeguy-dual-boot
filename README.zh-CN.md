@@ -44,6 +44,8 @@ ADB 和另一个槽位不能替代恢复通路。
 - `hdmi/`、`hdmi-label/`、`voice/`：[硬件适配与构建命令](docs/hardware.zh-CN.md)。
 - `runtime/`：[内部启动、回退与组件组装](docs/runtime.zh-CN.md)。
 - 镜像构建：[从官方输入提取并本地组装](docs/images.zh-CN.md)。
+- `adb-helper/`：[澎湃OS调试连接恢复](docs/adb-helper.zh-CN.md)。
+- [共用遥控器](docs/remote-pairing.zh-CN.md)：离线准备与上机顺序。
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17

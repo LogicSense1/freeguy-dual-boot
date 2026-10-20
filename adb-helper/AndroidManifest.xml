@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.codex.tvadb" android:versionCode="4" android:versionName="4.0">
+  <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="30"/>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+  <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+  <uses-feature android:name="android.software.leanback" android:required="false"/>
+  <application android:label="@string/app_name" android:allowBackup="false" android:directBootAware="true" android:theme="@android:style/Theme.Material.NoActionBar">
+    <activity android:name=".MainActivity" android:exported="true">
+      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+    </activity>
+    <receiver android:name=".BootReceiver" android:exported="true" android:permission="android.permission.WRITE_SECURE_SETTINGS">
+      <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="mitv.action.STR_BOOT_COMPLETED"/></intent-filter>
+    </receiver>
+    <service android:name=".KeeperService" android:exported="false"/>
+    <service android:name=".ConnectionService" android:exported="true" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+      <intent-filter><action android:name="android.accessibilityservice.AccessibilityService"/></intent-filter>
+      <meta-data android:name="android.accessibilityservice" android:resource="@xml/connection_service"/>
+    </service>
+    <service android:name=".RestoreJob" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+  </application>
+</manifest>
