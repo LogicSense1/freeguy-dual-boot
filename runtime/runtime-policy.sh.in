@@ -1,0 +1,53 @@
+#!/system/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Reconstruct accepted component state on fresh Google data. No boot/slot writes.
+set -eu
+umask 077
+[ "$(id -u)" = 0 ]
+[ "$(getprop ro.codex.fileboot)" = 1 ]
+[ "$(getprop ro.build.version.release)" = 14 ]
+[ "$(getprop sys.boot_completed)" = 1 ]
+printf '%s\n' \
+ '@HDMI_SHA256@  /system/priv-app/OriginalHdmi/OriginalHdmi.apk' \
+ '@LABEL_SHA256@  /system/priv-app/NativeHdmiLabel/NativeHdmiLabel.apk' \
+ '@AUDIO_SHA256@  /vendor/lib/hw/audio.primary.mt5879.so' | sha256sum -c -
+D=$(mktemp -d /data/local/tmp/codex-runtime-policy-XXXXXX)
+trap 'rm -f "$D"/*.state; rmdir "$D"' EXIT
+CHANGED_AGENT=0
+disabled() {
+    dumpsys package "$1" > "$D/package.state"
+    awk '/disabledComponents:/{inside=1;next} inside && /^      [^ ]/{inside=0} inside {print $1}' "$D/package.state" | grep -qxF "$2"
+}
+for C in \
+ com.mediatek.tv.agent/com.mediatek.tv.agent.sounddb.SoundProvider \
+ com.mediatek.tv.agent/com.mediatek.tv.agent.settingspqdb.PqProvider \
+ com.mediatek.tv.agent/com.mediatek.tv.agent.TVRemoteServiceAgent \
+ com.mediatek.extservice/com.mediatek.extservice.PqService \
+ com.mediatek.extservice/com.mediatek.extservice.AudioService \
+ com.mediatek.tis/com.mediatek.tis.HdmiInputService; do
+    P=${C%%/*}; N=${C#*/}
+    if ! disabled "$P" "$N"; then
+        pm disable --user 0 "$C"
+        disabled "$P" "$N"
+        [ "$P" != com.mediatek.tv.agent ] || CHANGED_AGENT=1
+        echo "POLICY_CHANGED $C"
+    else
+        echo "POLICY_ALREADY_APPLIED $C"
+    fi
+done
+cmd overlay list --user 0 > "$D/overlay.state"
+if ! grep -qxF '[x] local.codex.hdminativelabel' "$D/overlay.state"; then
+    cmd overlay enable --user 0 local.codex.hdminativelabel
+fi
+cmd overlay list --user 0 > "$D/overlay.state"
+grep -qxF '[x] local.codex.hdminativelabel' "$D/overlay.state"
+# Force-stop does not terminate this persistent app. Restart only when its
+# component configuration changed; verify the exact process before signalling.
+if [ "$CHANGED_AGENT" = 1 ]; then
+    for PID in $(pidof com.mediatek.tv.agent || true); do
+        case "$PID" in ''|*[!0-9]*) exit 4;; esac
+        [ "$(tr '\000' '\n' < /proc/"$PID"/cmdline | head -n 1)" = com.mediatek.tv.agent ]
+        kill -TERM "$PID"
+    done
+fi
+echo 'GOOGLE_RUNTIME_POLICY_VERIFIED_V1'

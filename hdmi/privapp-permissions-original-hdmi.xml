@@ -1,0 +1,6 @@
+<permissions>
+ <privapp-permissions package="local.codex.hdmi">
+  <permission name="android.permission.TV_INPUT_HARDWARE"/>
+  <permission name="android.permission.HDMI_CEC"/>
+ </privapp-permissions>
+</permissions>

@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.codex.hdminativelabel" android:versionCode="2" android:versionName="0.2">
+ <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="34"/>
+ <overlay android:targetPackage="com.mitv.livetv" android:isStatic="false" android:priority="1"/>
+ <application android:label="Native HDMI name presentation" android:hasCode="false" android:allowBackup="false"/>
+</manifest>

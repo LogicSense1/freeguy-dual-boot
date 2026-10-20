@@ -1,0 +1,13 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.codex.hdmi" android:versionCode="14" android:versionName="0.14">
+ <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="34"/>
+ <uses-permission android:name="android.permission.TV_INPUT_HARDWARE"/>
+ <uses-permission android:name="android.permission.HDMI_CEC"/>
+ <uses-feature android:name="android.software.leanback" android:required="true"/>
+ <application android:label="Original HDMI" android:allowBackup="false" android:usesNonSdkApi="true">
+  <activity android:name=".ServiceRefreshActivity" android:exported="true" android:theme="@android:style/Theme.Material.NoActionBar"/>
+  <service android:name=".HardwareCecService" android:permission="android.permission.BIND_TV_INPUT" android:exported="true">
+   <intent-filter><action android:name="android.media.tv.TvInputService"/></intent-filter>
+   <meta-data android:name="android.media.tv.input" android:resource="@xml/tv_input"/>
+  </service>
+ </application>
+</manifest>
