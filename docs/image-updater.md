@@ -68,9 +68,53 @@ These checks describe this implementation's provisioned layout. They are not
 instructions to recursively change ownership or labels on `/data`.
 Do not change the seven personal-data images to satisfy an updater check.
 
-The checked host-side provisioning and execution wrapper is not yet included.
+The checked host-side permission provisioning tool is not yet included.
 An ordinary ADB shell or root invocation is not a substitute for the required
 UID and service context. Do not bypass a refused check.
+
+## Start and observe a provisioned updater
+
+`tools/run-image-updater.py` checks the two profiles, fixed plan and local DEX
+hash. It expects that exact DEX to have already been provisioned on the TV as
+`/data/local/codex-image-update-v1/<sha256>.dex`. It does not upload the DEX,
+images or personal data, or grant permissions. This wrapper has offline tests;
+the new wrapper has not yet been run on the TV.
+
+Start with `inspect` once the required layout and service access exist:
+
+```sh
+python3 tools/run-image-updater.py start \
+  --serial TV_ADB_SERIAL \
+  --build /private/image-update-01 \
+  --old-profile /private/installed-profile.json \
+  --new-profile /private/candidate-profile.json \
+  --action inspect \
+  --output /private/update-inspection-01
+```
+
+The explicit serial selects one ADB device. A probe build also requires `--probe`.
+`apply` and `rollback` use the same interface, with a new evidence directory for
+each deliberate invocation. Their effects are described below.
+
+The tool creates one uniquely named helper script through the original TV
+service and launches it once. A shell checks its UID, boot identity and DEX
+hash before starting Java. Logs are correlated by a unique run token, shell PID,
+Java PID and plan. Success also requires the same stock boot after completion.
+Run records and this component's logs remain in the private output directory.
+
+If the connection fails or the observation expires, use the existing run:
+
+```sh
+python3 tools/run-image-updater.py observe \
+  --run /private/update-inspection-01 --seconds 900
+```
+
+`observe` only reads identity and logs; it never recreates or relaunches the
+helper. A missing start record or lost log buffer leaves the run unresolved.
+Check the saved dispatch phase and running process before another invocation.
+The Java transaction lock prevents simultaneous image transactions, but does
+not make a blind retry a valid recovery plan. No helper scripts are deleted
+automatically.
 
 ## Transaction and result
 
@@ -118,6 +162,7 @@ change from Xiaomi to HyperOS. That fresh DEX has not been deployed.
 
 ```sh
 python3 -B tests/test-image-updater.py
+python3 -B tests/test-run-image-updater.py
 python3 tools/test-core.py --java-home /path/to/jdk-17
 ```
 

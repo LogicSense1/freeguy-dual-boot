@@ -60,8 +60,49 @@ Java 执行程序要求：
 这些是当前实现的目录约定，不是让你递归修改 `/data` 的所有权或标签。
 不要为了满足检查而修改七个个人数据镜像。
 
-带校验的主机侧权限配置及执行封装尚未公开齐全。
+带校验的主机侧权限配置工具尚未公开。
 普通 ADB shell 或 root 运行不能代替要求的 UID 和服务上下文；不要绕过拒绝条件。
+
+## 启动与继续观察
+
+`tools/run-image-updater.py` 核对两份配置、固定计划及本地 DEX 哈希，
+要求相同 DEX 已预先配置在电视的
+`/data/local/codex-image-update-v1/<sha256>.dex`。
+它不上传 DEX、镜像或个人数据，也不授予权限。
+新版封装已做离线测试，尚未在电视上运行。
+
+确认目录和服务权限已配置好后，先运行 `inspect`：
+
+```sh
+python3 tools/run-image-updater.py start \
+  --serial TV_ADB_SERIAL \
+  --build /private/image-update-01 \
+  --old-profile /private/installed-profile.json \
+  --new-profile /private/candidate-profile.json \
+  --action inspect \
+  --output /private/update-inspection-01
+```
+
+必须显式指定 ADB 设备。测试文件构建还需传入 `--probe`。
+`apply` 和 `rollback` 使用同一接口，每次明确发起执行时使用新的记录目录，
+具体效果见下一节。
+
+工具通过原厂服务写入一个名称唯一的辅助脚本，仅启动一次。
+脚本先核对 UID、启动标识和 DEX 哈希，再执行 Java。
+结果按本轮标记、脚本 PID、Java PID 和计划关联；完成后还要确认仍是同一次原厂启动。
+执行记录和本组件日志仅保存在私有输出目录。
+
+连接中断或观察超时后，应继续观察已有执行：
+
+```sh
+python3 tools/run-image-updater.py observe \
+  --run /private/update-inspection-01 --seconds 900
+```
+
+`observe` 只读设备身份和日志，不重新创建或启动脚本。
+缺少开始记录或日志已被覆盖时，结果保持未确定；再次执行前应核对已保存的下发阶段
+和进程状态。Java 事务锁可防止同时更新镜像，但不能代替对上一次执行的确认。
+工具不会自动删除辅助脚本。
 
 ## 事务与结果
 
@@ -100,6 +141,7 @@ Java 执行程序要求：
 
 ```sh
 python3 -B tests/test-image-updater.py
+python3 -B tests/test-run-image-updater.py
 python3 tools/test-core.py --java-home /path/to/jdk-17
 ```
 
