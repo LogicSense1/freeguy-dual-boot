@@ -236,6 +236,38 @@ serial undo, filesystem health and the actual first boot still need verification
 The reference TV's current daily command line passed the transform and length
 checks; that does not validate the new setup runtime.
 
+## Inspect the stopped serial console
+
+With the original B bootloader already stopped, inspect the prepared entry:
+
+```sh
+python3 tools/first-activation-console.py inspect \
+  --port /dev/YOUR_VERIFIED_SERIAL_PORT \
+  --activation-plan /private/first-activation-plan-01/journal.json \
+  --activation-plan-sha256 VERIFIED_ACTIVATION_PLAN_SHA256 \
+  --recovery-profile /private/serial-recovery-profile.json \
+  --output /private/first-console-inspection-01
+```
+
+The command requires a fresh `freeguy#` prompt, the supported B bootloader,
+unchanged slot/retry state, stock initialization flags and exact stock arguments.
+It writes only private host-side logs. It does not stop a running TV or authorize
+activation.
+
+The module also contains the write transaction for the future installer. It
+records intent before each command, checks the temporary entry in RAM before
+`saveenv`, and checks B state before and after saving. It never sends reset,
+boot, AVB, slot or retry-counter writes. A failed response or checkpoint stops
+the transaction without retry or automatic undo. `saveenv` acknowledgement and
+RAM readback do not prove persistent storage or a successful boot.
+
+The standalone CLI deliberately exposes only inspection. Backups, same-device
+serial undo, filesystem health and fresh file verification still need to be
+joined by the installation coordinator before it can call the write component.
+Synthetic failure tests cover every command/checkpoint boundary; a local PTY
+test exercises the actual serial transport. This new transaction has not been
+used to activate a first installation on the TV.
+
 ## Remaining device sequence
 
 Each step must be established on the recipient's own TV:
@@ -271,5 +303,6 @@ python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
+python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-runtime-policy-start.py
 ```

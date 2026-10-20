@@ -202,6 +202,34 @@ python3 tools/plan-first-activation.py \
 文件系统健康状况和首次启动结果。本机当前日常系统的命令行已通过转换及长度核对，
 不能据此认为新的安装环境已通过上机验证。
 
+## 检查已截停的串口
+
+原厂 B Bootloader 已经停在控制台后，检查准备好的入口：
+
+```sh
+python3 tools/first-activation-console.py inspect \
+  --port /dev/YOUR_VERIFIED_SERIAL_PORT \
+  --activation-plan /private/first-activation-plan-01/journal.json \
+  --activation-plan-sha256 VERIFIED_ACTIVATION_PLAN_SHA256 \
+  --recovery-profile /private/serial-recovery-profile.json \
+  --output /private/first-console-inspection-01
+```
+
+命令要求新收到的 `freeguy#` 提示符、匹配的 B Bootloader、未改变的槽位和重试状态、
+原厂初始化标记及逐字一致的原厂参数。它只保存电脑端的私有日志，不会截停运行中的电视，
+也不授权启动配置写入。
+
+模块内包含供后续安装程序调用的写入事务：每条命令发送前保存意图，
+临时参数在 RAM 中回读匹配后才执行 `saveenv`，保存前后都核对 B 状态。
+不发送重启、启动、AVB、槽位或重试计数写入命令。
+响应或日志写入失败即停止，不重试，也不自动撤销。
+`saveenv` 确认和 RAM 回读不等于已验证持久存储或实际启动。
+
+独立命令目前只开放检查。安装协调程序仍需接入备份、同机串口撤销、
+文件系统健康和最新文件验证，才能调用写入组件。
+合成测试覆盖每条命令与日志写入的中断边界，本地伪终端测试覆盖实际串口传输代码；
+新事务尚未用于电视的首次安装激活。
+
 ## 后续设备步骤
 
 接收方必须在自己的电视上逐项完成：
@@ -229,5 +257,6 @@ python3 -B tests/test-first-install-plan.py
 python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
+python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-runtime-policy-start.py
 ```
