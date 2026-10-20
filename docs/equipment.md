@@ -8,7 +8,8 @@
 | --- | --- |
 | A compatible L75MA-SPL / freeguy TV | The only board tested by this project. Verify firmware, boot chain and image hashes as well as the model. |
 | A computer with enough free storage | Build images, retain original files and store verified backups outside the TV. The completed daily setup does not need the computer to boot. |
-| A dedicated Xiaomi/MTK HDMI-to-UART USB adapter | Read early boot output, interrupt the bootloader and undo a supported startup change when Android cannot start. |
+| A compatible Xiaomi/MTK HDMI-to-UART USB adapter, often sold as “HDMI to TTL” | Read early boot output, interrupt the bootloader and undo a supported startup change when Android cannot start. |
+| Verified backups stored outside the TV | Keep the original boot configuration and required firmware/data backups available even when Android cannot start. Files stored only on the TV are not an independent backup. |
 | Ethernet to a trusted local network | Transfer and inspect files while Android runs. It is not an early-boot recovery connection. |
 | A TV remote and access to mains power | Operate the UI and recover from a stopped system when instructed. |
 | Stable power | A power failure during configuration or filesystem writes can leave an unusable state. |
@@ -28,6 +29,8 @@ An ordinary HDMI cable, capture card or USB video adapter is not a UART adapter.
 Confirm the adapter's pinout and electrical compatibility with its supplier.
 Do not connect a generic TTL board by guessing pins or voltage, and do not
 feed an external power pin into the television.
+The computer must recognize the adapter as a serial port. A product labelled
+“HDMI to TTL” is not sufficient evidence that it matches this board.
 
 Before any startup modification, verify all three: readable boot logs, an
 interactive bootloader prompt, and a successful exact configuration undo.
@@ -38,6 +41,8 @@ Receiving text alone does not prove that the transmit path works.
 You can inspect source, download official inputs and build locally without a
 serial adapter. This project's installation procedure requires a verified
 serial recovery route before changing startup configuration.
+If that route is unavailable, stop at offline preparation; do not change the
+TV's startup configuration.
 
 ADB depends on a running Android system. Fastboot and the Recovery menu are
 not guaranteed to provide a usable write path on this TV. If startup fails,
@@ -65,6 +70,8 @@ This is experimental, unofficial software, provided **as is**, without a
 warranty of compatibility, reliability or recoverability. Use may cause data
 loss, boot loops, loss of device functions or permanent device damage, and may
 require paid repair or replacement.
+Neither Xiaomi nor Google has endorsed this project or promised to support
+devices modified with it.
 
 You are responsible for deciding whether to use it and for keeping backups and
 a recovery route. To the extent permitted by applicable law, contributors are
@@ -73,3 +80,5 @@ liability that applicable law does not allow to be excluded.
 
 The governing license terms are [Apache-2.0, sections 7 and 8](../LICENSE).
 This notice does not grant rights to third-party firmware or replace its terms.
+It also does not replace the documented prerequisites, known limitations or
+the [incident report](incident.md).
