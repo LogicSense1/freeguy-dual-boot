@@ -47,8 +47,8 @@ permissions, original services or runtime component configuration.
 
 `voice/` reconnects an already bonded Xiaomi remote. It does not create or remove
 bonds. Both systems need a separately prepared, consistent copy of the owner's
-pairing information; this source bundle does not yet include that provisioning
-procedure. Never import another TV's pairing data.
+pairing information. Follow the [remote pairing guide](remote-pairing.md) for
+preparation and provisioning. Never import another TV's pairing data.
 
 The bridge receives the physical voice-key reports, uses the locally supplied
 OEM decoder, and supplies PCM through the original audio HAL socket. A small
