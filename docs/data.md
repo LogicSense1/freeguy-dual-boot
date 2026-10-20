@@ -14,9 +14,10 @@ the names match a partition.
 | `userdata.img`, `metadata.img`, `cache.img` | Separate Google data files |
 
 Do not write any of these files to `/dev/block/by-name/*` or use them as input
-to Fastboot flash. Never substitute another TV's device data. The complete
-initial extraction and checked device installation of these seven files is
-still missing from the public workflow.
+to Fastboot flash. Never substitute another TV's device data.
+[Early capture](owner-capture.md) supplies the four same-device inputs; its
+builders and readback tool are available and the reference capture passed.
+The complete activation and installation sequence is still being integrated.
 
 ## Back up an existing installation
 

@@ -13,7 +13,8 @@ Google 的七个可写文件位于 `/data/local/tmp/codex-gtv-fileboot-v1/`。
 | `userdata.img`、`metadata.img`、`cache.img` | Google 独立数据文件 |
 
 不要把这些文件写入 `/dev/block/by-name/*`，也不要用于 Fastboot flash。
-不得替换为另一台电视的设备数据。七个文件的完整首次提取和上机部署流程尚未公开齐全。
+不得替换为另一台电视的设备数据。[早期采集](owner-capture.zh-CN.md)提供四份本机输入，
+构建与取回工具已公开，参考电视采集通过；完整启动和部署流程仍在集成。
 
 ## 备份已有安装
 

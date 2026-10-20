@@ -9,6 +9,7 @@ import argparse
 import gzip
 import hashlib
 import io
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -89,6 +90,10 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--ramdisk', required=True, type=Path)
     p.add_argument('--ramdisk-sha256', required=True)
+    p.add_argument('--owner-capture-build', type=Path,
+                   help='Use an audited owner-capture root instead of the Google runtime')
+    p.add_argument('--stock-boot', type=Path,
+                   help='Exact original B image, required only with --owner-capture-build')
     p.add_argument('--clang', required=True, type=Path)
     link = p.add_mutually_exclusive_group(required=True)
     link.add_argument('--ld-lld', type=Path)
@@ -112,8 +117,17 @@ def main():
     byname = {e['name']: e for e in items}
     need('init' in byname and stat.S_ISLNK(byname['init']['fields'][1]) and
          byname['init']['data'] == b'/system/bin/init', 'Expected dispatcher symlink')
-    for name in ('system/bin/init', 'system/bin/stock-init', 'codex/entry.sh',
-                 'codex/helper', 'codex/trial-guard'):
+    need(bool(args.stock_boot)==bool(args.owner_capture_build),
+         'Owner-capture builds require both the capture build and original stock boot')
+    required=('system/bin/init', 'system/bin/stock-init')
+    if args.owner_capture_build:
+        spec=importlib.util.spec_from_file_location('owner_root',ROOT/'tools/build-owner-root.py')
+        owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
+        expected,owner_info=owner.prepare(args.stock_boot.read_bytes(),args.owner_capture_build)
+        need(table(items)[2]==table(expected)[2],'Owner root differs from exact stock/capture assembly')
+    else:
+        required+=('codex/entry.sh','codex/helper','codex/trial-guard')
+    for name in required:
         need(name in byname and stat.S_ISREG(byname[name]['fields'][1]), 'Missing runtime entry: ' + name)
     blob, rows, index = table(items)
     need(not args.output.exists(), 'Use a new output directory')
@@ -132,6 +146,9 @@ def main():
                '-DROOT_TMPFS_OPTIONS="mode=0755,size=192m"',
                '-DROOT_READY_MESSAGE="<6>CTV_GOOGLE_ROOT_ACCEPTED_RAMDISK_RECONSTRUCTED\\n"',
                '-DROOT_EXEC_MESSAGE="<6>CTV_GOOGLE_ROOT_EXEC_ACCEPTED_DISPATCHER\\n"']
+    if args.owner_capture_build:
+        defines[-2:]=['-DROOT_READY_MESSAGE="<6>FREEGUY_OWNER_ROOT_RECONSTRUCTED\\n"',
+                      '-DROOT_EXEC_MESSAGE="<6>FREEGUY_OWNER_ROOT_EXEC\\n"']
 
     def run(command, **kw):
         subprocess.run([str(v) for v in command], check=True, capture_output=True, **kw)
@@ -153,6 +170,8 @@ def main():
                 'commandLineLogging': 'length-only',
                 'componentSources': {n: sha((code / n).read_bytes()) for n in
                                      ('internal-env-inspect.h', 'internal-env-transform.c', 'internal-env-once.h')}}
+    if args.owner_capture_build:
+        manifest.update(rootKind='owner-capture',ownerCapture=owner_info)
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(json.dumps({'sha256': manifest['sha256'], 'entries': len(index),
                       'deployEligible': False, 'firmwareContainedInLocalOutput': True}))

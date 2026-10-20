@@ -31,8 +31,9 @@ never be replaced by empty initialization images.
 
 ## Still missing from the published workflow
 
-- Initial extraction and checked deployment of same-device backing data.
-  Cold backup, local expansion and fresh empty data creation are documented.
+- General activation and checked deployment of same-device backing data.
+  [Early owner capture](docs/owner-capture.md), cold backup, local expansion
+  and fresh empty data creation are documented.
 - Initial privileged installation, permissions and startup-service provisioning.
 - Device-side pairing installation and checked ADB-helper provisioning
   ([offline pairing preparation](docs/remote-pairing.md) is available).
