@@ -46,6 +46,7 @@ ADB 和另一个槽位不能替代恢复通路。
 - 镜像构建：[从官方输入提取并本地组装](docs/images.zh-CN.md)。
 - `adb-helper/`：[澎湃OS调试连接恢复](docs/adb-helper.zh-CN.md)。
 - [共用遥控器](docs/remote-pairing.zh-CN.md)：离线准备与上机顺序。
+- [数据与备份](docs/data.zh-CN.md)：冷备份、本地恢复准备和首次空数据构建。
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17

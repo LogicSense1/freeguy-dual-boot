@@ -48,6 +48,7 @@ instructions are being imported. This checkout cannot yet install the complete T
 - Image builders: [official-input extraction and local assembly](docs/images.md).
 - `adb-helper/`: [HyperOS debugging recovery](docs/adb-helper.md).
 - [Shared remote pairing](docs/remote-pairing.md): offline preparation and device sequence.
+- [Data and backups](docs/data.md): cold capture, local recovery preparation and fresh data creation.
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17
