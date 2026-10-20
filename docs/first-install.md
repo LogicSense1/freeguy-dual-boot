@@ -8,7 +8,7 @@ an earlier temporary Google boot. A fresh installation cannot start directly
 with the daily runtime.
 
 This guide covers assembly, file staging, switch access and daily finalization.
-First-boot activation and device-side pairing are still being integrated.
+First-boot activation is still being integrated.
 It is not yet an end-to-end installation procedure.
 
 ## Inputs
@@ -359,7 +359,8 @@ Each step must be established on the recipient's own TV:
 3. Activate the exact one-time entry from the checked B console. Observe startup
    and independently verify both environment copies restored to HyperOS values.
 4. In temporary Google, prepare switch-service access, install
-   the Google switch app and preserve this TV's remote pairing.
+   the Google switch app and import this TV's remote pairing with the
+   [first-install pairing tool](remote-pairing.md#first-install-device-tool).
 5. Commit shared state and replace the setup loader with the separately built
    daily loader through a reviewed file transaction. Retain the predecessor
    and matching app profiles.
@@ -368,7 +369,7 @@ Each step must be established on the recipient's own TV:
 
 The staging, verification, access and finalization tools cover individual parts
 of this sequence; their live first-install validation is outstanding.
-The coordinator and pairing integration still need to connect these parts.
+The activation coordinator still needs to connect these parts.
 Switch APKs use the ordinary package-manager installation described in the
 [app guide](switch-app.md#first-install-startup-binding); startup configuration
 still requires later boot verification. Do not fill gaps with old AVB experiments, donor
@@ -390,6 +391,7 @@ python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
 python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-provision-switch-startup.py
+python3 -B tests/test-install-first-remote.py
 JAVA_HOME=/path/to/jdk-17 python3 -B tests/test-finalize-first-install.py
 python3 -B tests/test-runtime-policy-start.py
 ```

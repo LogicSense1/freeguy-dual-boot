@@ -49,7 +49,64 @@ files before restarting it. A partial write or power failure is not covered by
 the offline merge.
 
 The reference TV passed direction keys in both systems and Google voice after
-this migration. The public preparer has passed synthetic tests; its new CLI has
-not performed a live installation. A checked device-side installer is still
-needed. Do not copy the historical experimental reverse-sync scripts or another
-TV's configuration as a shortcut.
+this migration. Do not copy historical reverse-sync experiments or another TV's
+configuration.
+
+## First-install device tool
+
+`tools/install-first-remote.py` implements the file transaction in the
+[bounded setup runtime](first-install.md). It refuses the daily runtime, active
+voice/reconnect helpers, another device, an expired setup window, or leftover
+files from an earlier pairing operation. Keep Ethernet/ADB and serial recovery
+available; the remote disconnects while Bluetooth is stopped.
+
+```sh
+python3 tools/install-first-remote.py inspect \
+  --adb /path/to/adb --device TV_SETUP_ADB_SERIAL \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_DEVICE_BINDING_SHA256 \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/remote-inspect-01
+```
+
+Use `install` and a new output directory after inspection. It:
+
+1. Disables Bluetooth, waits for OFF and stops the identified Bluetooth process.
+2. Reads HyperOS's configuration through the original-data mount. That source
+   is never written. Both Google originals and prepared files are saved privately.
+3. Uploads both replacements exclusively, preserves owner/mode/SELinux labels,
+   and checks their bytes before moving either original.
+4. Retains each original inode at `bt_config.conf.freeguy-before-v1` or
+   `bt_config.bak.freeguy-before-v1`, then commits the replacement and syncs.
+5. Re-enables Bluetooth and checks that the imported remote is listed.
+
+No firmware, boot configuration, default-system preference or HyperOS pairing
+is changed. Direction keys and voice still need physical acceptance after
+transitioning to the daily runtime; a listed bond alone is not that evidence.
+
+On failure, keep the private output directory. The tool does not automatically
+retry, delete files or restart Bluetooth over an incomplete pair. In the same
+setup boot, use `restore` with the same build/device arguments, a new output
+directory and these additional arguments:
+
+```sh
+--install-record /private/remote-install-01/journal.json \
+--install-record-sha256 VERIFIED_FAILED_INSTALL_JOURNAL_SHA256
+```
+
+Restoration requires the original local snapshots and verifies every retained
+inode and affected primary file before replacing anything. A changed bond,
+different boot or uncertain prior operation causes refusal. The rollback is
+for incomplete transactions, not for undoing a successful installation after
+later Bluetooth activity. New and rejected files remain available for inspection;
+there is no recursive deletion or automatic resume. If restoration itself is
+interrupted, inspect that journal before another action.
+
+The new installer and recovery path have synthetic mutation/checkpoint failure
+tests. A read-only check on the reference TV confirmed that the setup guard
+rejects its installed daily runtime. **The installer has not been applied to a
+fresh TV.** These tests do not model physical power loss or prove remote reception.
+
+```sh
+python3 -B tests/test-install-first-remote.py
+```
