@@ -271,6 +271,39 @@ Synthetic failure tests cover every command/checkpoint boundary; a local PTY
 test exercises the actual serial transport. This new transaction has not been
 used to activate a first installation on the TV.
 
+## Switch access in temporary Google
+
+`tools/prepare-first-switch-access.py` checks the bounded first-install runtime,
+the owner's device binding, the running helper and entry-script hashes, and the
+staged files. It refuses an installed daily runtime or existing proxy/shared
+state. Use the same local inputs and independently recorded binding as staging:
+
+```sh
+python3 tools/prepare-first-switch-access.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding YOUR_RECORDED_DEVICE_BINDING \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/new-switch-access-inspection
+```
+
+The `prepare` action, with a new output directory, changes access metadata on
+three directories and fourteen immutable files. It creates a proxy directory,
+two fixed symlinks and a 64 KiB scratch file. Symlink ownership and labels are
+changed without following their targets. It does not write environment contents,
+firmware partitions or the seven data images, install apps, or reboot.
+
+An interrupted run keeps its journal and partial files; do not retry blindly.
+Completion means access preparation passed readback, not that the stock service
+or the switch apps have been verified. The new tool has synthetic interruption
+coverage and has refused the existing daily TV runtime in a read-only check.
+Its preparation action has not been run on a first-install TV.
+
+Do not create the shared default directory yet. The temporary runtime refuses
+that directory on its next start. Shared state must be committed with the
+transition to the daily loader; creating it early can prevent resuming setup
+after an interruption. That transition transaction remains to be implemented.
+
 ## Remaining device sequence
 
 Each step must be established on the recipient's own TV:
@@ -281,10 +314,11 @@ Each step must be established on the recipient's own TV:
    refusal before changing startup state.
 3. Activate the exact one-time entry from the checked B console. Observe startup
    and independently verify both environment copies restored to HyperOS values.
-4. In temporary Google, prepare switch-service access and shared state, install
+4. In temporary Google, prepare switch-service access, install
    both switch apps and preserve this TV's remote pairing.
-5. Replace the setup loader with the separately built daily loader through a
-   reviewed file transaction. Retain the predecessor and matching app profiles.
+5. Commit shared state and replace the setup loader with the separately built
+   daily loader through a reviewed file transaction. Retain the predecessor
+   and matching app profiles.
 6. Verify both switches, remembered defaults, retained data and serial recovery.
    Physical cold-power startup is a separate acceptance item.
 
@@ -307,5 +341,6 @@ python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
+python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-runtime-policy-start.py
 ```

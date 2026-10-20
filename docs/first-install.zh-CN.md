@@ -232,6 +232,36 @@ python3 tools/first-activation-console.py inspect \
 合成测试覆盖每条命令与日志写入的中断边界，本地伪终端测试覆盖实际串口传输代码；
 新事务尚未用于电视的首次安装激活。
 
+## 临时 Google 中的切换权限
+
+`tools/prepare-first-switch-access.py` 检查限时安装环境、本机身份、
+运行中的 helper 和入口脚本哈希，以及已部署文件。
+已有日常环境或已经存在代理／共享状态目录时拒绝操作。
+沿用部署时的本地输入和独立记录的设备身份：
+
+```sh
+python3 tools/prepare-first-switch-access.py inspect \
+  --adb /path/to/adb --device TV_ADB_SERIAL \
+  --inputs /private/first-install-inputs.json \
+  --known-device-binding YOUR_RECORDED_DEVICE_BINDING \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --output /private/new-switch-access-inspection
+```
+
+`prepare` 操作需使用新的输出目录，只调整三个目录和十四个不可变文件的访问权限，
+并创建代理目录、两个固定符号链接和一个 64 KiB 测试文件。
+修改符号链接的属主和标签时不跟随目标。
+它不写环境文件内容、固件分区或七个数据镜像，不安装应用，也不重启。
+
+中断会保留日志和部分文件，不要直接重跑。
+完成仅表示权限准备通过回读，不代表原厂服务或切换应用已经验证。
+新工具已通过合成中断测试，并在只读检查中拒绝了现有电视的日常环境；
+准备操作尚未在首次安装的电视上运行。
+
+此时不要创建共享默认目录。临时环境下次启动会拒绝这个目录；
+共享状态必须与切换到日常 loader 一起提交，提前创建可能导致配置中断后无法继续。
+这项转换事务仍待实现。
+
 ## 后续设备步骤
 
 接收方必须在自己的电视上逐项完成：
@@ -240,8 +270,9 @@ python3 tools/first-activation-console.py inspect \
 2. 修改启动状态前，核对上传哈希、剩余空间、权限及 loader 对非 PID 1 运行的拒绝。
 3. 从已检查的 B 控制台激活精确的一次性入口，观察启动，
    再独立确认两份环境文件已经恢复为澎湃OS参数。
-4. 在临时 Google 中配置切换服务权限和共享状态，安装两侧切换应用，保留本机遥控器配对。
-5. 通过已审查的文件事务换成单独构建的日常 loader，保留旧版本及匹配的应用配置。
+4. 在临时 Google 中配置切换服务权限，安装两侧切换应用，保留本机遥控器配对。
+5. 通过已审查的文件事务提交共享状态并换成单独构建的日常 loader，
+   保留旧版本及匹配的应用配置。
 6. 验证双向切换、默认启动、数据保留和串口恢复。实际断电开机需单独验收。
 
 部署及验证工具覆盖第 1–2 步，尚待首次安装的实机验证；第 3–5 步的完整、带校验命令仍未提供。
@@ -260,5 +291,6 @@ python3 -B tests/test-first-install-stage.py
 python3 -B tests/test-first-install-verify.py
 python3 -B tests/test-first-activation-plan.py
 python3 -B tests/test-first-activation-console.py
+python3 -B tests/test-first-switch-access.py
 python3 -B tests/test-runtime-policy-start.py
 ```
