@@ -29,12 +29,15 @@ An ordinary HDMI cable, capture card or USB video adapter is not a UART adapter.
 Confirm the adapter's pinout and electrical compatibility with its supplier.
 Do not connect a generic TTL board by guessing pins or voltage, and do not
 feed an external power pin into the television.
+Incorrect wiring or signal voltage can damage the TV or adapter.
 The computer must recognize the adapter as a serial port. A product labelled
 “HDMI to TTL” is not sufficient evidence that it matches this board.
 
 Before any startup modification, verify all three: readable boot logs, an
 interactive bootloader prompt, and a successful exact configuration undo.
 Receiving text alone does not prove that the transmit path works.
+These checks also apply when an agent performs the installation. Having the
+adapter on hand without testing it is not a verified recovery route.
 
 ## Without HDMI serial
 
@@ -70,6 +73,7 @@ This is experimental, unofficial software, provided **as is**, without a
 warranty of compatibility, reliability or recoverability. Use may cause data
 loss, boot loops, loss of device functions or permanent device damage, and may
 require paid repair or replacement.
+These risks apply to manual steps, scripts and agent-assisted operation.
 Neither Xiaomi nor Google has endorsed this project or promised to support
 devices modified with it.
 
