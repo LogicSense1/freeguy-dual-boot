@@ -17,4 +17,18 @@
     <string name="switch_failed">暂时无法切换。</string>
     <string name="restored">切换未完成，已恢复澎湃OS启动。</string>
     <string name="recovery_required">启动配置异常。请勿重启或断电。</string>
+    <string name="switch_failed_reason">无法切换：%1$s</string>
+    <string name="restored_reason">已恢复澎湃OS启动。%1$s</string>
+    <string name="error_boot_reason">此版本尚不支持本次开机类型。</string>
+    <string name="error_busy">另一次系统切换正在进行。</string>
+    <string name="error_files">Google TV 启动文件缺失或已改变。</string>
+    <string name="error_data">无法访问 Google TV 数据文件。</string>
+    <string name="error_config">启动配置与本机安装不匹配。</string>
+    <string name="error_access">启动配置的访问权限已改变。</string>
+    <string name="error_service">电视系统服务未就绪或拒绝访问。</string>
+    <string name="error_health">Google TV 尚未确认正常启动。</string>
+    <string name="error_default">无法验证已保存的默认系统设置。</string>
+    <string name="error_system">当前系统无法执行此操作。</string>
+    <string name="error_io">无法读取或校验启动配置。</string>
+    <string name="error_unknown">检查失败，诊断代码：E_UNKNOWN。</string>
 </resources>

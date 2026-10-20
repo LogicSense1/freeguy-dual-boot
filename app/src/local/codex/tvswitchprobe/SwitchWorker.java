@@ -58,13 +58,7 @@ public final class SwitchWorker {
         }
     }
     private static String normalized(String b)throws Exception {
-        List<String> out=new ArrayList<>();int reasons=0,brightness=0;
-        for(String t:b.split(" ")){
-            if(t.startsWith("androidboot.bootreason=")){need(t.equals("androidboot.bootreason=cold")||t.equals("androidboot.bootreason=reboot"),"Unsupported boot reason");reasons++;}
-            else if(t.startsWith("lastblval=")){need(t.matches("lastblval=[0-9]{1,3}")&&Integer.parseInt(t.substring(10))<=255,"Invalid brightness");brightness++;}
-            else out.add(t);
-        }
-        need(reasons==1&&brightness==1,"Dynamic boot fields missing");return String.join(" ",out);
+        return BootArguments.normalized(b);
     }
     private static byte[][] preflight()throws Exception {
         need("freeguy".equals(prop("ro.product.device"))&&"_b".equals(prop("ro.boot.slot_suffix"))&&"1".equals(prop("sys.boot_completed"))&&"11".equals(prop("ro.build.version.release"))&&!"1".equals(prop("ro.codex.fileboot")),"Original HyperOS B required");
@@ -96,8 +90,11 @@ public final class SwitchWorker {
         call(23,path,raw);call(24,path,null);call(29,null,null);need(Arrays.equals(raw,read(path)),"Snapshot readback failed");
     }
     private static void progress(String state,int n,int total){
+        progress(state,n,total,"UNKNOWN");
+    }
+    private static void progress(String state,int n,int total,String error){
         android.util.Log.i("CodexSystemSwitch",state+" "+n+"/"+total);
-        try{new ProcessBuilder("/system/bin/am","broadcast","--user","0","--receiver-foreground","-n","local.codex.tvswitchprobe/.SwitchResultReceiver","-a","local.codex.tvswitchprobe.RESULT","--es","state",state,"--ei","current",String.valueOf(n),"--ei","total",String.valueOf(total)).redirectErrorStream(true).start().waitFor(5,TimeUnit.SECONDS);}catch(Exception ignored){}
+        try{new ProcessBuilder("/system/bin/am","broadcast","--user","0","--receiver-foreground","-n","local.codex.tvswitchprobe/.SwitchResultReceiver","-a","local.codex.tvswitchprobe.RESULT","--es","state",state,"--ei","current",String.valueOf(n),"--ei","total",String.valueOf(total),"--es","error",SwitchFailure.safe(error)).redirectErrorStream(true).start().waitFor(5,TimeUnit.SECONDS);}catch(Exception ignored){}
     }
     private static String bootId()throws Exception {
         String id=new String(Files.readAllBytes(Paths.get("/proc/sys/kernel/random/boot_id")),"US-ASCII").trim();
@@ -180,14 +177,14 @@ public final class SwitchWorker {
             }catch(Throwable e){
                 android.util.Log.e("CodexSystemSwitch","Switch stopped",e);
                 if(transaction!=null&&transaction.attempted()){
-                    try{transaction.rollback();progress("RESTORED",0,0);}
+                    try{transaction.rollback();progress("RESTORED",0,0,SwitchFailure.code(e));}
                     catch(Throwable recovery){android.util.Log.e("CodexSystemSwitch","Recovery required; do not reboot",recovery);progress("RECOVERY_REQUIRED",0,0);}
-                }else progress("FAILED",0,0);
+                }else progress("FAILED",0,0,SwitchFailure.code(e));
                 if(preferenceAttempted&&preferences!=null){
                     try{DefaultBootPolicy s=preferences.read();preferences.commit(s,s.pause());}
                     catch(Throwable stateFailure){android.util.Log.e("CodexSystemSwitch","Default state remains unacknowledged",stateFailure);}
                 }
             }
-        }catch(Throwable e){android.util.Log.e("CodexSystemSwitch","Unable to acquire switch lock",e);progress("FAILED",0,0);}
+        }catch(Throwable e){android.util.Log.e("CodexSystemSwitch","Unable to acquire switch lock",e);progress("FAILED",0,0,SwitchFailure.code(e));}
     }
 }

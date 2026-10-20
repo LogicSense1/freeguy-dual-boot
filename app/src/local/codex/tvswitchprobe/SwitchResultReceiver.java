@@ -7,6 +7,6 @@ public final class SwitchResultReceiver extends BroadcastReceiver {
         String s=i.getStringExtra("state");
         if(s==null||!s.matches("CHECKING|READY|RESTARTING|FAILED|RESTORED|RECOVERY_REQUIRED"))return;
         SwitchActivity a=SwitchActivity.visible;
-        if(a!=null)a.update(s,Math.max(0,i.getIntExtra("current",0)),Math.max(0,i.getIntExtra("total",0)));
+        if(a!=null)a.update(s,Math.max(0,i.getIntExtra("current",0)),Math.max(0,i.getIntExtra("total",0)),SwitchFailure.safe(i.getStringExtra("error")));
     }
 }

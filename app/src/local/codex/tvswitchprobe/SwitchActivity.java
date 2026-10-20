@@ -37,15 +37,16 @@ public final class SwitchActivity extends Activity {
         setContentView(root);cancel.requestFocus();enter.setOnClickListener(v->{if(ready&&!busy){if(google){if(AssetPins.ENABLE_PERSISTENT_DEFAULT){start("return-stock");return;}busy=true;enter.setEnabled(false);status.setText(string("restarting"));new Thread(()->{try{SwitchBridge.returnToStock();}catch(Exception e){android.util.Log.e("CodexSystemSwitch","Return failed",e);runOnUiThread(()->{busy=false;enter.setEnabled(true);status.setText(string("switch_failed"));});}},"return-stock").start();}else start("enter-google");}});
         if(google){ready=true;enter.setEnabled(true);enter.setAlpha(1f);progress.setVisibility(View.INVISIBLE);status.setText("");enter.requestFocus();}else start("check");
     }
-    private void start(String action){if(busy)return;busy=true;ready=false;enter.setEnabled(false);enter.setAlpha(.45f);progress.setVisibility(View.VISIBLE);progress.setIndeterminate(true);status.setText(action.equals("check")?string("preparing"):string("switching"));new Thread(()->{try{SwitchBridge.start(this,action);}catch(Exception e){android.util.Log.e("CodexSystemSwitch","Bridge failed",e);runOnUiThread(()->update("FAILED",0,0));}},"switch-launch").start();}
-    public void update(String state,int n,int total){runOnUiThread(()->{
+    private void start(String action){if(busy)return;busy=true;ready=false;enter.setEnabled(false);enter.setAlpha(.45f);progress.setVisibility(View.VISIBLE);progress.setIndeterminate(true);status.setText(action.equals("check")?string("preparing"):string("switching"));new Thread(()->{try{SwitchBridge.start(this,action);}catch(Exception e){android.util.Log.e("CodexSystemSwitch","Bridge failed",e);runOnUiThread(()->update("FAILED",0,0,SwitchFailure.code(e)));}},"switch-launch").start();}
+    public void update(String state,int n,int total,String error){runOnUiThread(()->{
+        String reason=string("error_"+SwitchFailure.safe(error).toLowerCase(java.util.Locale.ROOT));
         if(state.equals("CHECKING")){progress.setIndeterminate(false);progress.setMax(Math.max(1,total));progress.setProgress(n);return;}
         progress.setIndeterminate(false);busy=false;ready=state.equals("READY");enter.setEnabled(ready&&AssetPins.ENABLE_ENTER_GOOGLE);enter.setAlpha(enter.isEnabled()?1f:.45f);
         if(ready){progress.setVisibility(View.INVISIBLE);status.setText(AssetPins.ENABLE_ENTER_GOOGLE?"":string("unavailable"));if(enter.isEnabled())enter.requestFocus();}
         else if(state.equals("RESTARTING")){busy=true;status.setText(string("restarting"));}
-        else if(state.equals("RESTORED")){status.setText(string("restored"));}
+        else if(state.equals("RESTORED")){status.setText(string("restored_reason",reason));}
         else if(state.equals("RECOVERY_REQUIRED")){status.setText(string("recovery_required"));}
-        else{status.setText(string("switch_failed"));}
+        else{status.setText(string("switch_failed_reason",reason));}
     });}
     @Override protected void onDestroy(){if(visible==this)visible=null;super.onDestroy();}
 }

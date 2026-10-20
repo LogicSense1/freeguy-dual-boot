@@ -17,4 +17,18 @@
     <string name="switch_failed">Unable to switch right now.</string>
     <string name="restored">Switch failed. HyperOS startup restored.</string>
     <string name="recovery_required">Startup configuration error. Do not restart or unplug.</string>
+    <string name="switch_failed_reason">Unable to switch: %1$s</string>
+    <string name="restored_reason">HyperOS startup restored. %1$s</string>
+    <string name="error_boot_reason">This startup type is not supported by this app version.</string>
+    <string name="error_busy">Another switch is already in progress.</string>
+    <string name="error_files">Google TV startup files are missing or have changed.</string>
+    <string name="error_data">Google TV data files are unavailable.</string>
+    <string name="error_config">The startup configuration does not match this installation.</string>
+    <string name="error_access">Access to the startup configuration has changed.</string>
+    <string name="error_service">The TV system service is unavailable or refused access.</string>
+    <string name="error_health">Google TV has not reported a healthy startup.</string>
+    <string name="error_default">The saved startup preference could not be verified.</string>
+    <string name="error_system">This action is unavailable in the current system.</string>
+    <string name="error_io">The startup configuration could not be read or verified.</string>
+    <string name="error_unknown">The check failed. Diagnostic code: E_UNKNOWN.</string>
 </resources>

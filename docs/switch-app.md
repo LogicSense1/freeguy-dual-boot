@@ -65,6 +65,15 @@ the complete immutable file set, and command-line space. It saves private
 snapshots, writes the backup environment before the primary, and reads back
 both. An unrecognized state stops the operation.
 
+The supported OEM boot reasons are `cold`, `reboot` and `warm`. Only this field
+and a valid backlight value are excluded from the pinned argument hash; all other
+startup arguments must still match. Version 5 rejected `warm`, which prevented
+both automatic entry and manual switching after an owner reboot. Version 6
+accepts it without changing the saved reason or the startup transformation.
+Failure messages now distinguish startup configuration, missing files, service
+access and other checks in English and Chinese. Raw exceptions stay in the
+`CodexSystemSwitch` log.
+
 The persistent preference is separate from the temporary boot parameters.
 Automatic startup is dispatched once per stock boot. Google acknowledges a
 stable health lease; an incomplete attempt pauses automatic entry. Returning

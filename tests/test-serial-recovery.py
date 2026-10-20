@@ -88,10 +88,12 @@ class SerialRecoveryTest(unittest.TestCase):
         self.assertTrue(all(cmd in recovery.READS for cmd in c.calls))
 
     def test_dynamic_fields_preserved(self):
-        trial = TRIAL.replace("reason=cold", "reason=reboot").replace("lastblval=75", "lastblval=12")
-        target = recovery.restore_plan(trial, ALLOWED)
-        self.assertIn("reason=reboot", target)
-        self.assertIn("lastblval=12", target)
+        for reason in ("cold", "reboot", "warm"):
+            trial = TRIAL.replace("reason=cold", "reason=" + reason).replace("lastblval=75", "lastblval=12")
+            target = recovery.restore_plan(trial, ALLOWED)
+            self.assertIn("reason=" + reason, target)
+            self.assertIn("lastblval=12", target)
+            self.assertIsNone(recovery.restore_plan(target, ALLOWED))
 
     def test_rejects_unrecognized_configurations(self):
         for value in (

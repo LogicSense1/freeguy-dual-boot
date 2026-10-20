@@ -15,9 +15,9 @@ def main():
     package = "local.codex.tvswitchprobe."
     source = root / "app/src/local/codex/tvswitchprobe"
     classes = ["BootEnvironment", "DefaultBootPolicy", "DefaultStateTransaction",
-               "EnvironmentTransaction"]
+               "EnvironmentTransaction", "BootArguments", "SwitchFailure"]
     tests = ["BootEnvironmentTest", "DefaultBootPolicyTest",
-             "EnvironmentTransactionTest", "ImageTransactionTest"]
+             "EnvironmentTransactionTest", "ImageTransactionTest", "BootArgumentsTest", "SwitchFailureTest"]
     files = [source / (name + ".java") for name in classes]
     files += [root / "updater/src/local/codex/tvswitchprobe/ImageTransaction.java"]
     files += [root / "tests" / (name + ".java") for name in tests]

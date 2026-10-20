@@ -88,7 +88,8 @@ def normalized(value):
     reasons = [t for t in tokens if t.startswith("androidboot.bootreason=")]
     levels = [t for t in tokens if t.startswith("lastblval=")]
     need(len(reasons) == 1 and reasons[0] in
-         ("androidboot.bootreason=cold", "androidboot.bootreason=reboot"),
+         ("androidboot.bootreason=cold", "androidboot.bootreason=reboot",
+          "androidboot.bootreason=warm"),
          "Unrecognized boot reason")
     need(len(levels) == 1 and re.fullmatch(r"lastblval=[0-9]{1,3}", levels[0])
          and int(levels[0].split("=")[1]) <= 255, "Invalid brightness field")
