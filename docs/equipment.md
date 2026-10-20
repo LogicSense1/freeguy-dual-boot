@@ -21,8 +21,10 @@ and backups available.
 
 Allow space for two full image sets, expanded working files and independent
 backups. Check the planned sizes before building; a nearly full disk is not
-adequate. A USB drive can help with backup transfer but is not a permanent
-boot dependency. An external backup disk is useful when the computer lacks space.
+adequate. The [prefix backup tool](boot-backup.md) requires a FAT USB drive with
+at least 5 GiB free unless a verified independent prefix backup already exists.
+It is not a permanent boot dependency. An external backup disk is useful when
+the computer lacks space.
 
 On the tested board the debug adapter used HDMI 1 at **115200, 8N1**.
 An ordinary HDMI cable, capture card or USB video adapter is not a UART adapter.

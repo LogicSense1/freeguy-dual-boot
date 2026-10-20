@@ -42,8 +42,9 @@ are not promised.
 
 The switch app, boot-state policy, checked environment and image-file
 transactions, internal startup runtime, HDMI/CEC, remote voice and microphone adapters are published here.
-Image builders are included with a [build map](BUILD.md). Supporting apps and full deployment
-instructions are being imported. This checkout cannot yet install the complete TV system.
+Image builders, supporting apps and deployment tools are included with a
+[build map](BUILD.md). The combined fresh-install procedure has not yet passed
+a hardware run; this is not a verified installation release.
 
 - `app/`: bilingual switch UI, launcher artwork and boot-state logic.
 - `updater/src/`: [checked image-file replacement and rollback](docs/image-updater.md).
@@ -51,10 +52,10 @@ instructions are being imported. This checkout cannot yet install the complete T
 - `tools/test-core.py`, `tests/`: offline tests with synthetic fixtures.
 - `hdmi/`, `hdmi-label/`, `voice/`: [hardware adapters and build commands](docs/hardware.md).
 - `runtime/`: [internal startup, rollback and component assembly](docs/runtime.md).
-- [First installation](docs/first-install.md): temporary setup-root build and the remaining deployment sequence.
+- [First installation](docs/first-install.md): setup-root build, staging, [checked activation](docs/activation.md) and daily finalization.
 - Image builders: [official-input extraction and local assembly](docs/images.md).
 - `adb-helper/`: [HyperOS debugging recovery](docs/adb-helper.md).
-- [Shared remote pairing](docs/remote-pairing.md): offline preparation and device sequence.
+- [Shared remote pairing](docs/remote-pairing.md): offline preparation and checked device installation.
 - [Data and backups](docs/data.md): cold capture, local recovery preparation and fresh data creation.
 - [Recovery](RECOVERY.md): bounded serial undo, physical configuration readback and verification limits.
 

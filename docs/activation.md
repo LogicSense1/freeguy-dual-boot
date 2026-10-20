@@ -17,17 +17,20 @@ Keep all files outside this repository. Use records actually collected on the
 same TV, in this order:
 
 1. Retain an independently verified partition-prefix backup and the original
-   stock boot arguments. Keep separate backups of data that matter.
-2. Demonstrate the exact serial undo on that TV using
-   [`serial-recovery.py restore`](../RECOVERY.md). Retain its complete output
-   directory, then verify a subsequent normal HyperOS B boot.
-3. Stage the chosen loader/files and complete their non-PID-1 refusal probe.
+   stock boot arguments. The [prefix exporter](boot-backup.md) produces the
+   required backup manifest. Keep separate backups of data that matter.
+2. For the first owner capture, stage and probe its loader, then use the
+   [RAM-only undo exercise](../RECOVERY.md#establish-the-undo-before-first-activation).
+   Retain the restore outputs and verify a subsequent normal HyperOS B boot.
+   Google setup can reuse this demonstrated undo on the same TV and stock profile.
+3. Stage the chosen loader/files, or reverify the already-staged capture loader,
+   and complete their non-PID-1 refusal probe.
    Record the stock boot arguments and full kernel command line during that
    same normal stock boot. Do not reboot between this observation and the probe.
 4. Prepare the manifests below, check them offline, then stop the supported B
    console using the already verified serial connection.
 
-The coordinator does not establish the initial recovery connection or create
+The coordinator does not establish the initial serial connection or create
 the backups. A manifest binds recorded files; it cannot prove which TV the
 adapter was physically attached to or when the files were collected. Do not
 invent successful results, copy another owner's records or alter failed journals.

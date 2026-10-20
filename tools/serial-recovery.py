@@ -217,7 +217,8 @@ class Console:
                 os.close(self.fd)
                 self.fd = None
 
-    def command(self, command):
+    def command(self, command, timeout=30):
+        need(type(timeout) is int and 1 <= timeout <= 180, "Invalid console response timeout")
         need(command in READS or (self.authorized_write is not None and
              command in (self.authorized_write, "saveenv")),
              "Command outside the recovery plan")
@@ -231,7 +232,7 @@ class Console:
                 need(chunk, "Serial connection closed")
                 data.extend(chunk)
                 need(len(data) <= 2 * 1024**2, "Unexpected serial output size")
-        deadline = time.monotonic() + 30
+        deadline = time.monotonic() + timeout
         while not has_prompt(data) and time.monotonic() < deadline:
             if select.select([self.fd], [], [], .1)[0]:
                 chunk = os.read(self.fd, 65536)

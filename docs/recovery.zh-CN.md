@@ -75,6 +75,42 @@ python3 tools/serial-recovery.py restore \
 不要改用 `avb verify`、`bootm`、切槽位或修改重试计数。
 工具不能修复损坏的固件、不可用的控制台或硬件故障。
 
+## 首次激活前验证撤销
+
+`exercise-serial-undo.py` 将参考电视上用过的 RAM 测试整理成工具。
+它需要独立校验的分区前缀备份、已审计并部署的本机采集加载器、完成的拒绝探针，
+以及正常原厂启动观察记录；不要求事先已有成功撤销记录。
+按[激活清单](activation.zh-CN.md#准备记录)准备文件，但省略 `serialUndo` 字段：
+
+```sh
+python3 tools/exercise-serial-undo.py inspect \
+  --preflight /private/undo-preflight.json \
+  --preflight-sha256 VERIFIED_PREFLIGHT_SHA256 \
+  --recovery-profile /private/recovery-profile.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_BINDING \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --stock-boot /private/stock/boot.img \
+  --capture-build /private/owner-capture-01 \
+  --loader-build /private/owner-loader-01 \
+  --output /private/undo-inspect-01
+```
+
+停在受支持的 B 控制台后，将 `inspect` 改为 `exercise`，使用新输出目录，
+并添加 `--port /dev/YOUR_VERIFIED_SERIAL_PORT`。
+工具取得新提示符，**只在 RAM 中**设置精确的临时参数，回读后调用公开恢复流程。
+只保存恢复后的原厂参数，不重启、不刷固件、不切槽。
+
+保留 `serial-undo.json` 和它引用的 `restore/` 目录，供激活协调程序核对。
+随后确认一次正常 HyperOS 启动，再重新运行已部署文件的探针、记录启动参数，
+之后才能准备激活。本次测试没有以 PID 1 运行加载器。
+
+任何命令或本地日志写入失败都会停止，不重试、不自动重启。临时值可能仍在 RAM；
+使用文档中的 `restore` 命令，先确认实际状态，不要保存或启动不确定的配置。
+
+测试覆盖命令与日志的中断边界，以及模拟串口下的完整命令行。
+新包装工具尚未在全新电视上执行；底层恢复写入路径的本机验收见上文。
+这些检查不代表能够恢复物理存储故障。
+
 ## 独立回读持久配置
 
 此项只读检查要求已接受的 Android 14 Google 环境、已授权的 ADB 连接、

@@ -151,9 +151,13 @@ def filesystem_checks(plan, docker, container, output, files, run=subprocess.run
     return checks
 
 
-def prepare(plan, preflight, parent, allowed, output, files, docker=None, container=None, runner=subprocess.run):
-    need(set(preflight) == {"version", "deviceBindingSha256", "deviceBindingScheme",
-                           "staging", "verification", "bootObservation", "backup", "serialUndo"}
+def prepare(plan, preflight, parent, allowed, output, files, docker=None, container=None,
+            runner=subprocess.run, undo_required=True):
+    keys = {"version", "deviceBindingSha256", "deviceBindingScheme",
+            "staging", "verification", "bootObservation", "backup"}
+    if undo_required:
+        keys.add("serialUndo")
+    need(set(preflight) == keys
          and preflight["version"] == 1, "Unexpected preflight schema")
     expected, scheme = plan["deviceBinding"], plan["deviceBindingScheme"]
     binding(preflight, expected, scheme)
@@ -176,10 +180,12 @@ def prepare(plan, preflight, parent, allowed, output, files, docker=None, contai
                     bootObservationSha256=preflight["bootObservation"]["sha256"])
     console_tool.check_plan(evidence, allowed)
     backup_path = files.file(preflight["backup"], parent, 2 * 1024**2)
-    undo_path = files.file(preflight["serialUndo"], parent, 2 * 1024**2)
     backup = check_backup(inventory.read_json(backup_path), backup_path.parent, files, expected, scheme)
-    undo = check_undo(inventory.read_json(undo_path), undo_path.parent, files,
-                      expected, scheme, allowed, evidence["stockBootargs"])
+    undo = None
+    if undo_required:
+        undo_path = files.file(preflight["serialUndo"], parent, 2 * 1024**2)
+        undo = check_undo(inventory.read_json(undo_path), undo_path.parent, files,
+                          expected, scheme, allowed, evidence["stockBootargs"])
     # The inventory already hashed these build inputs. Check them again and
     # retain their identities across filesystem checks and console setup.
     for row in plan["files"]:
@@ -187,7 +193,8 @@ def prepare(plan, preflight, parent, allowed, output, files, docker=None, contai
                    Path("/"), inventory.LIMIT)
     checks = filesystem_checks(plan, docker, container, output, files, runner)
     files.unchanged()
-    return evidence, dict(mode="first-entry-preflight", complete=True,
+    return evidence, dict(mode="first-entry-preflight" if undo_required else "serial-undo-test-preflight",
+                          complete=True, serialUndoRequired=undo_required,
                           deviceBindingSha256=expected, deviceBindingScheme=scheme,
                           backup=backup, serialUndo=undo, filesystemChecks=checks,
                           stagingAndProbeJoined=True, deviceWritesIssued=False,

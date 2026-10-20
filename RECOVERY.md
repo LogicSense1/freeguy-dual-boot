@@ -31,6 +31,8 @@ Keep these outside Git, on another machine:
 The tested prefix backup excludes userdata, eMMC hardware boot areas and RPMB.
 It is not a full-chip backup. Recovery menu wipes do not repair the old A image
 and erase data; do not use them as a routine response to a failed Google boot.
+The [prefix backup tool](docs/boot-backup.md) exports to USB and verifies an
+independent computer copy before producing the activation backup manifest.
 
 ## Google fails after startup
 
@@ -90,6 +92,49 @@ interrupt further resets if the first attempt fails.
 Do not substitute `avb verify`, `bootm`, slot changes or retry-counter changes
 for the normal boot path. Those operations are outside this recovery tool.
 It cannot repair damaged firmware, an unusable console, or a hardware fault.
+
+## Establish the undo before first activation
+
+For a new installation, `exercise-serial-undo.py` exposes the RAM-only test
+used on the reference TV. It requires the independently verified prefix backup,
+an audited and staged owner-capture loader, its completed refusal probe and a
+normal stock boot observation. It does not require an earlier successful undo.
+Build the [activation preflight manifest](docs/activation.md#evidence) with the
+`serialUndo` field omitted:
+
+```sh
+python3 tools/exercise-serial-undo.py inspect \
+  --preflight /private/undo-preflight.json \
+  --preflight-sha256 VERIFIED_PREFLIGHT_SHA256 \
+  --recovery-profile /private/recovery-profile.json \
+  --known-device-binding INDEPENDENTLY_RECORDED_OWNER_BINDING \
+  --known-device-binding-scheme freeguy-emmc-cid-serial-v1 \
+  --stock-boot /private/stock/boot.img \
+  --capture-build /private/owner-capture-01 \
+  --loader-build /private/owner-loader-01 \
+  --output /private/undo-inspect-01
+```
+
+With the supported B console already stopped, use `exercise` instead of
+`inspect`, a new output directory and `--port /dev/YOUR_VERIFIED_SERIAL_PORT`.
+The tool checks the fresh console, sets the exact temporary arguments **in RAM
+only**, reads them back, then invokes the public restore path. Only the restored
+stock arguments are saved. There is no reset, firmware write or slot change.
+
+Keep `serial-undo.json` and its referenced `restore/` directory. The resulting
+manifest is accepted by the activation coordinator. Verify the next normal
+HyperOS boot, then rerun the staged-file probe and boot observation before
+preparing activation. The loader has not run as PID 1 during this exercise.
+
+If a command or local journal write fails, the tool stops without retry or
+automatic reboot. The temporary value may remain in RAM: use the documented
+`restore` command and establish the actual state before proceeding. Do not save
+or boot an uncertain configuration.
+
+The tool's tests cover command and checkpoint interruption boundaries and its
+full CLI against a simulated console. The automated wrapper has not been run on
+a fresh TV. The underlying restore path's reference-device test is described
+above; neither proves recovery from physical storage failure.
 
 ## Independent persistent readback
 

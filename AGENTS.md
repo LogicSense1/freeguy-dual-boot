@@ -3,6 +3,13 @@
 Read README, `docs/equipment.md`, `docs/incident.md` and `docs/firmware.md` first.
 This is a device-specific source preview, not a generic TV installer.
 
+For a fresh device, follow `docs/boot-backup.md`, then the staging, undo exercise,
+activation and collection steps linked from `docs/owner-capture.md`.
+After releasing that temporary entry, use the build map and `docs/first-install.md`
+for Google setup and the daily transition. Never run fresh-install tools over
+an existing installation. The combined first-install path still needs hardware
+validation; component tests do not establish that result.
+
 - Keep source in this repository. Keep firmware, generated images, local
   profiles, backups, keys, device identities and logs outside it.
 - Record the exact board, bootloader, firmware and input hashes. A model name

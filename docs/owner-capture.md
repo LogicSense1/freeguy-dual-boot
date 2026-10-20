@@ -114,6 +114,10 @@ Use the [activation coordinator](activation.md) to check retained backup and
 serial-undo evidence together with staging and probing before arming the entry.
 Staging and probing alone do not authorize startup changes. The coordinator's
 fresh-install hardware validation remains outstanding.
+For a new TV, obtain the [prefix backup](boot-backup.md), stage and probe this
+loader, then perform the [RAM-only undo exercise](../RECOVERY.md#establish-the-undo-before-first-activation).
+After the subsequent normal stock boot, rerun the probe and observation before
+activation.
 
 The reference test used the already verified original-B entry and serial undo.
 It retained the installed daily loader, selected HyperOS as the default,

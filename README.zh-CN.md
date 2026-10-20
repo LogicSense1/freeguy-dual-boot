@@ -38,9 +38,9 @@ Google 经原厂系统的启动阶段进入，两套系统保留各自数据。
 ## 源码预览
 
 已公开切换应用、默认启动策略、启动配置与镜像文件事务、内部启动运行时、HDMI／CEC、
-遥控器语音、麦克风适配及离线测试。镜像构建工具已附[构建路线](docs/build.zh-CN.md)，
-正在补齐辅助应用和完整部署说明。
-当前仓库还不能安装完整电视系统。
+遥控器语音、麦克风适配及离线测试。镜像构建、辅助应用和部署工具已附
+[构建路线](docs/build.zh-CN.md)。完整首次安装流程尚未经过实机验收，
+目前不是经过验证的安装发行版。
 
 - `app/`：中英文切换界面、图标和启动状态逻辑。
 - `updater/src/`：[镜像文件的校验、替换与还原](docs/image-updater.zh-CN.md)。
@@ -48,10 +48,10 @@ Google 经原厂系统的启动阶段进入，两套系统保留各自数据。
 - `tools/test-core.py`、`tests/`：只使用合成数据的离线测试。
 - `hdmi/`、`hdmi-label/`、`voice/`：[硬件适配与构建命令](docs/hardware.zh-CN.md)。
 - `runtime/`：[内部启动、回退与组件组装](docs/runtime.zh-CN.md)。
-- [首次安装](docs/first-install.zh-CN.md)：临时安装环境构建及尚待补齐的设备部署步骤。
+- [首次安装](docs/first-install.zh-CN.md)：安装环境构建、部署、[校验后激活](docs/activation.zh-CN.md)和日常运行配置。
 - 镜像构建：[从官方输入提取并本地组装](docs/images.zh-CN.md)。
 - `adb-helper/`：[澎湃OS调试连接恢复](docs/adb-helper.zh-CN.md)。
-- [共用遥控器](docs/remote-pairing.zh-CN.md)：离线准备与上机顺序。
+- [共用遥控器](docs/remote-pairing.zh-CN.md)：离线准备与带校验的上机安装。
 - [数据与备份](docs/data.zh-CN.md)：冷备份、本地恢复准备和首次空数据构建。
 - [恢复](docs/recovery.zh-CN.md)：串口撤销范围、物理启动配置回读及验证边界。
 
