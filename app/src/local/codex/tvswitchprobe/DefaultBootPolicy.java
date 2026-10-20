@@ -9,6 +9,7 @@ import java.util.Arrays;
  * Pure state transitions: no device I/O, pairing changes, or data recreation.
  */
 public final class DefaultBootPolicy {
+    // XIAOMI is the persisted v1 wire value for HyperOS. Keep it for existing data.
     public enum Target { XIAOMI, GOOGLE }
     public enum Phase { IDLE, PENDING, HEALTHY, PAUSED }
     private static final String NONE="-";

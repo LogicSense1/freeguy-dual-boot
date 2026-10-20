@@ -1,0 +1,19 @@
+{
+  "checkedDate": "2026-10-20",
+  "packages": {
+    "hyperos": {
+      "url": "https://ota-mitv.cdn.pandora.xiaomi.com/OS2.0.5.0.RFTMATV/freeguy-ota_full-OS2.0.5.0.RFTMATV-user-11.0-6fc20cb6f5.zip",
+      "bytes": 1355658244,
+      "sha256": "956abe84b1f6e28af303ca41c6e4f07910c22fe9e992af1ccc8c9c8a0333f381",
+      "device": "freeguy",
+      "build": "xiaomi/freeguy/freeguy:11/RP1A.200720.011/OS2.0.5.0.RFTMATV:user/release-keys"
+    },
+    "google-tv-donor": {
+      "url": "https://android.googleapis.com/packages/ota-api/package/904596d74ece1960947b81849914c8e79d0dadc1.zip",
+      "bytes": 1505086971,
+      "sha256": "d03840c1f010aaeca857dee5487b914fa75b0a125236613e52309bbacec4e3bf",
+      "device": "ladybird",
+      "build": "Xiaomi/ladybird/ladybird:14/UKM3.240326.001/490:user/release-keys"
+    }
+  }
+}

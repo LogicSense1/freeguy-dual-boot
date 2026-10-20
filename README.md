@@ -2,23 +2,27 @@
 
 [简体中文](README.zh-CN.md)
 
-Switch between Xiaomi's stock system and a locally assembled Google TV system
+Switch between the stock Xiaomi HyperOS system and a locally assembled Google TV system
 on the Xiaomi L75MA-SPL (freeguy).
 
 **Development status:** switching and remembered defaults passed ordinary-reboot
 tests on one TV. Google starts through the stock system's startup stage. Both
-systems retained their test data. The independently rebuilt system has started and returned to Xiaomi.
+systems retained their test data. The independently rebuilt system has started and returned to HyperOS.
 Its watchdog has no one-hour operating limit. Remembered defaults passed
 ordinary reboots in both directions. Physical cold-power testing remains pending.
 There is no installation release yet.
 
-The switch app remembers the selected system. Xiaomi and Google keep separate
+The switch app remembers the selected system. HyperOS and Google TV keep separate
 data, and normal switching does not recreate either data area. The early loader
 removes its temporary boot parameters before entering Google. A runtime health
-failure records a fault and returns to Xiaomi; automatic entry then stays paused
+failure records a fault and returns to HyperOS; automatic entry then stays paused
 until Google is explicitly selected again. This path has passed a live heartbeat-loss test.
 
 ## Before using this code
+
+Read the [equipment and recovery requirements](docs/equipment.md).
+Without a verified HDMI serial connection, an early-boot failure may require
+paid repair or motherboard replacement. ADB and a spare slot are not substitutes.
 
 Keep the original B system, verified backups and a working serial recovery
 connection. Earlier experiments caused boot loops that required serial recovery.
@@ -30,26 +34,32 @@ are not promised.
 
 ## Source preview
 
-This first public snapshot contains the boot-state codec, default-system policy,
-checked environment and image-file transactions, and their offline tests.
-The switch UI, builders and hardware integration are still being prepared for
-publication. This checkout cannot yet build or install the complete TV system.
+The switch app, boot-state policy, checked environment and image-file
+transactions, and offline tests are published here. Runtime, HDMI/CEC,
+remote voice, microphone adapters, supporting apps and full build/deployment
+instructions are being imported. This checkout cannot yet install the complete
+TV system.
 
-- `app/src/`: boot-state and transaction logic.
+- `app/`: bilingual switch UI, launcher artwork and boot-state logic.
 - `updater/src/`: checked image-file replacement and rollback.
-- `tests/`: synthetic fixtures; no device backups.
-- `tools/test-core.py`: run the core tests with Python 3 and JDK 17.
+- `tools/build-switch-app.py`: local APK builder; [build guide](docs/switch-app.md).
+- `tools/test-core.py`, `tests/`: offline tests with synthetic fixtures.
 
 ```sh
 python3 tools/test-core.py --java-home /path/to/jdk-17
+python3 -B tests/test-profile.py
 ```
 
-These tests do not contact a TV. Passing them does not establish compatibility
-with another device. Firmware, Google apps, device backups, pairing data and keys
-are not included. Generated images, loaders and local profiles stay outside this
-repository.
+Read the [incident report](docs/incident.md) before planning a deployment.
+Obtain the exact inputs from the [official firmware sources](docs/firmware.md).
+Firmware, Google apps, device backups, pairing data and keys are not included.
+Generated images, loaders and local profiles stay outside this repository.
 
 ## License
 
 Original tooling: [Apache-2.0](LICENSE). Third-party components retain their own
 terms. This project is independent of Xiaomi and Google.
+
+Provided as is, without warranty. Use can cause data loss, boot loops or permanent
+device damage. Contributors accept no liability to the extent permitted by
+applicable law; see the [disclaimer](docs/equipment.md#disclaimer) and license.

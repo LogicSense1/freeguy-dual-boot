@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">电视系统切换</string>
+    <string name="title">切换系统</string>
+    <string name="current">当前</string>
+    <string name="switch_to">切换至</string>
+    <string name="hyperos">小米澎湃OS</string>
+    <string name="google_tv">Google TV</string>
+    <string name="default_after">切换后默认：%1$s</string>
+    <string name="next_start">下次开机：%1$s</string>
+    <string name="restart_to">重启并进入 %1$s</string>
+    <string name="cancel">取消</string>
+    <string name="preparing">正在准备…</string>
+    <string name="restarting">正在重新启动…</string>
+    <string name="switching">正在切换…</string>
+    <string name="unavailable">暂不可用</string>
+    <string name="switch_failed">暂时无法切换。</string>
+    <string name="restored">切换未完成，已恢复澎湃OS启动。</string>
+    <string name="recovery_required">启动配置异常。请勿重启或断电。</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TV Switch</string>
+    <string name="title">Switch system</string>
+    <string name="current">Current</string>
+    <string name="switch_to">Switch to</string>
+    <string name="hyperos">Xiaomi HyperOS</string>
+    <string name="google_tv">Google TV</string>
+    <string name="default_after">Default after switching: %1$s</string>
+    <string name="next_start">Next startup: %1$s</string>
+    <string name="restart_to">Restart to %1$s</string>
+    <string name="cancel">Cancel</string>
+    <string name="preparing">Preparing…</string>
+    <string name="restarting">Restarting…</string>
+    <string name="switching">Switching…</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="switch_failed">Unable to switch right now.</string>
+    <string name="restored">Switch failed. HyperOS startup restored.</string>
+    <string name="recovery_required">Startup configuration error. Do not restart or unplug.</string>
+</resources>
