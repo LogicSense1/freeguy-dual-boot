@@ -20,6 +20,9 @@ It is not yet an end-to-end installation procedure.
   [build map](../BUILD.md). Retain exact hashes and the local signing key.
 - Prepare fresh data from this TV's own inputs using the [data guide](data.md).
   Never replace an existing installation's data with newly initialized files.
+- If the two file-backed environment images fail filesystem checks, use the
+  [local copy preparation tool](data.md#prepare-clean-environment-copies).
+  Retain the originals and use the verified new hashes in the input inventory.
 
 The setup runtime refuses to start if
 `/data/local/codex-system-default-v1` already exists, including a dangling

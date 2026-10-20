@@ -72,6 +72,37 @@ python3 tools/prepare-data-restore.py \
 并未安装到电视。保留原始备份，另外检查文件系统一致性，上机前准备已验证的撤销路径。
 不能把离线展开成功当作设备已恢复。
 
+## 准备干净的环境副本
+
+`prepare-environment-copies.py` 处理两个 16 MiB 的文件镜像 `uenv.img` 和 `uuenv.img`：
+先创建新副本，仅在副本上运行 `e2fsck -fy`，随后要求只读 `e2fsck -fn` 检查通过。
+
+```sh
+python3 tools/prepare-environment-copies.py \
+  --uenv /private/owner-backup/uenv.img \
+  --uenv-sha256 VERIFIED_UENV_FILE_SHA256 \
+  --uuenv /private/owner-backup/uuenv.img \
+  --uuenv-sha256 VERIFIED_UUENV_FILE_SHA256 \
+  --docker /path/to/docker \
+  --container-id sha256:VERIFIED_LOCAL_E2FSPROGS_IMAGE_ID \
+  --output /private/environment-copies-01
+```
+
+只使用机主自己的备份和独立保留的哈希。Python 环境需要 `dissect.extfs`，
+本地容器需要包含 `/sbin/e2fsck`，并提供准确的镜像 ID。
+容器不自动拉取、不联网，每次只接触一个新候选文件，不挂载原备份或其所在目录。
+
+通过条件包括：可达路径、文件内容、属主、权限、链接数、符号链接目标和原始属性存储不变。
+部分原厂 inode 的附加字节没有有效 xattr 头，工具直接比较完整原始区域，不假定属性为空。
+完成前再次核对原备份哈希和文件身份。
+
+任何错误都会留下未完成记录；保留现场检查，不复用输出目录。
+超时后，`pendingContainer` 指定的容器可能仍在运行；先核对该容器实际状态，
+再检查或使用候选文件，不要直接重跑。
+文件系统干净不代表启动配置有效、固件兼容或能够恢复。
+这些副本不得刷入物理分区，工具不执行电视安装。
+已用本机备份完成一次本地验证，原备份及可达文件内容和元数据保留；结果尚未部署。
+
 ## 仅为首次安装创建空数据
 
 `create-data-images.py` 创建三个空 ext4 文件：6144 MiB 的 `userdata.img`、
@@ -101,6 +132,7 @@ python3 tools/create-data-images.py \
 python3 -B tests/test-backup-data.py
 python3 -B tests/test-prepare-data-restore.py
 python3 -B tests/test-create-data-images.py
+python3 -B tests/test-environment-copies.py
 ```
 
 测试覆盖设备身份、镜像占用、源文件变化、损坏／未完成备份、输出隔离和原文件保留。

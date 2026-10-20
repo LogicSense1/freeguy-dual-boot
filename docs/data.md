@@ -83,6 +83,45 @@ not installed. Preserve originals, inspect filesystem consistency separately,
 and retain a checked rollback before any future installation. Do not turn an
 offline preparation result into a claim of device recovery.
 
+## Prepare clean environment copies
+
+`prepare-environment-copies.py` works on the two 16 MiB file-backed images,
+`uenv.img` and `uuenv.img`. It creates new copies, runs `e2fsck -fy` on those
+copies, then requires a successful read-only `e2fsck -fn` check.
+
+```sh
+python3 tools/prepare-environment-copies.py \
+  --uenv /private/owner-backup/uenv.img \
+  --uenv-sha256 VERIFIED_UENV_FILE_SHA256 \
+  --uuenv /private/owner-backup/uuenv.img \
+  --uuenv-sha256 VERIFIED_UUENV_FILE_SHA256 \
+  --docker /path/to/docker \
+  --container-id sha256:VERIFIED_LOCAL_E2FSPROGS_IMAGE_ID \
+  --output /private/environment-copies-01
+```
+
+Use independently retained hashes and the owner's own backups. The Python
+environment needs `dissect.extfs`; the local container must contain
+`/sbin/e2fsck`. Its exact image ID is required. The container is never pulled,
+has no network and sees only one newly created candidate file at a time.
+The source files and their parent directories are not mounted into it.
+
+Acceptance requires unchanged reachable paths, file contents, ownership,
+permissions, link counts, symlink targets and raw attribute storage. Opaque
+inline inode bytes are compared directly, including when an OEM inode has no
+valid xattr header; the tool does not assume those bytes are empty. Original
+backup hashes and file identities are checked again before completion.
+
+The manifest remains incomplete on any error; keep the partial output for
+inspection and do not reuse its directory. After a timeout, the container named
+in `pendingContainer` may still be running. Check that container's actual state
+before inspecting or using its candidate; do not restart the operation blindly.
+A clean filesystem does not prove
+valid boot settings, firmware compatibility or recoverability. These copies
+must never be flashed to physical partitions. No TV installation is performed.
+The tool has passed a local run on the reference backups, preserving their
+reachable data and metadata; the resulting files have not been deployed.
+
 ## Create data for a new installation only
 
 `create-data-images.py` creates empty ext4 files: 6144 MiB `userdata.img`, 64 MiB
@@ -115,6 +154,7 @@ Do not use this tool during ordinary switching or an image update.
 python3 -B tests/test-backup-data.py
 python3 -B tests/test-prepare-data-restore.py
 python3 -B tests/test-create-data-images.py
+python3 -B tests/test-environment-copies.py
 ```
 
 Tests cover identity and in-use-image rejection, changing sources, corrupt or
