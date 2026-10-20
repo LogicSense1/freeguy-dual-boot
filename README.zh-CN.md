@@ -38,7 +38,7 @@ ADB 和另一个槽位不能替代恢复通路。
 当前仓库还不能安装完整电视系统。
 
 - `app/`：中英文切换界面、图标和启动状态逻辑。
-- `updater/src/`：镜像文件的校验、替换与还原。
+- `updater/src/`：[镜像文件的校验、替换与还原](docs/image-updater.zh-CN.md)。
 - `tools/build-switch-app.py`：APK 构建工具，见[构建说明](docs/switch-app.md)。
 - `tools/test-core.py`、`tests/`：只使用合成数据的离线测试。
 - `hdmi/`、`hdmi-label/`、`voice/`：[硬件适配与构建命令](docs/hardware.zh-CN.md)。

@@ -40,7 +40,7 @@ Image builders are included with a [build map](BUILD.md). Supporting apps and fu
 instructions are being imported. This checkout cannot yet install the complete TV system.
 
 - `app/`: bilingual switch UI, launcher artwork and boot-state logic.
-- `updater/src/`: checked image-file replacement and rollback.
+- `updater/src/`: [checked image-file replacement and rollback](docs/image-updater.md).
 - `tools/build-switch-app.py`: local APK builder; [build guide](docs/switch-app.md).
 - `tools/test-core.py`, `tests/`: offline tests with synthetic fixtures.
 - `hdmi/`, `hdmi-label/`, `voice/`: [hardware adapters and build commands](docs/hardware.md).

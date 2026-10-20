@@ -38,7 +38,7 @@ The health watchdog restores service by returning to HyperOS and latching a
 fault. Automatic Google startup then remains paused. Inspect the saved startup
 logs before explicitly selecting Google again.
 
-The image updater runs only under stock B with Google images detached and
+The [image updater](docs/image-updater.md) runs only under stock B with Google images detached and
 HyperOS selected as the default. It retains the old four immutable files and
 can reverse a partially completed replacement. It does not restore user data
 or write physical partitions.
